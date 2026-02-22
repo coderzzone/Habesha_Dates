@@ -15,8 +15,8 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyC93Xy0_ibpzzjjKa7nvtKiCorl6e9l7Vc',
-    appId: '1:60717378999:android:7847778554bb7994bf0c32',
+    apiKey: '',
+    appId: '',
     messagingSenderId: 'YOUR_SENDER_ID',
     projectId: 'habesha-dates',
     storageBucket: 'habesha-dates.appspot.com',
