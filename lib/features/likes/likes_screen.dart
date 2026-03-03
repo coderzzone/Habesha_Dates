@@ -16,7 +16,10 @@ class LikesScreen extends StatelessWidget {
       backgroundColor: const Color(0xFF0A0A0A),
       appBar: AppBar(
         backgroundColor: Colors.black,
-        title: const Text("Who Likes You", style: TextStyle(color: habeshaGold, fontWeight: FontWeight.bold)),
+        title: const Text(
+          "Who Likes You",
+          style: TextStyle(color: habeshaGold, fontWeight: FontWeight.bold),
+        ),
       ),
       body: StreamBuilder<QuerySnapshot>(
         // Query for likes where YOU are the target
@@ -25,13 +28,20 @@ class LikesScreen extends StatelessWidget {
             .where('likedUserId', isEqualTo: uid)
             .snapshots(),
         builder: (context, snapshot) {
-          if (!snapshot.hasData) return const Center(child: CircularProgressIndicator(color: habeshaGold));
+          if (!snapshot.hasData) {
+            return const Center(
+              child: CircularProgressIndicator(color: habeshaGold),
+            );
+          }
 
           final likeDocs = snapshot.data!.docs;
 
           if (likeDocs.isEmpty) {
             return const Center(
-              child: Text("No likes yet. Keep swiping!", style: TextStyle(color: Colors.white54)),
+              child: Text(
+                "No likes yet. Keep swiping!",
+                style: TextStyle(color: Colors.white54),
+              ),
             );
           }
 
@@ -49,11 +59,17 @@ class LikesScreen extends StatelessWidget {
 
               // Fetch the admirer's user details
               return FutureBuilder<DocumentSnapshot>(
-                future: FirebaseFirestore.instance.collection('users').doc(admirerId).get(),
+                future: FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(admirerId)
+                    .get(),
                 builder: (context, userSnap) {
-                  if (!userSnap.hasData) return Container(color: Colors.white10);
-                  
-                  final userData = userSnap.data!.data() as Map<String, dynamic>;
+                  if (!userSnap.hasData) {
+                    return Container(color: Colors.white10);
+                  }
+
+                  final userData =
+                      userSnap.data!.data() as Map<String, dynamic>;
 
                   return ClipRRect(
                     borderRadius: BorderRadius.circular(15),
@@ -68,7 +84,7 @@ class LikesScreen extends StatelessWidget {
                           //   decoration: BoxDecoration(
                           //     image: DecorationImage(image: imageProvider, fit: BoxFit.cover),
                           //   ),
-                          //   child: BackdropFilter(filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10), child: Container(color: Colors.black.withOpacity(0.1))),
+                          //   child: BackdropFilter(filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10), child: Container(color: Colors.black.withValues(alpha: 0.1))),
                           // ),
                         ),
                         Positioned(
@@ -81,12 +97,18 @@ class LikesScreen extends StatelessWidget {
                               gradient: LinearGradient(
                                 begin: Alignment.topCenter,
                                 end: Alignment.bottomCenter,
-                                colors: [Colors.transparent, Colors.black.withOpacity(0.8)],
+                                colors: [
+                                  Colors.transparent,
+                                  Colors.black.withValues(alpha: 0.8),
+                                ],
                               ),
                             ),
                             child: Text(
                               userData['name'] ?? "Someone",
-                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ),

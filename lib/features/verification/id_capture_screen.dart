@@ -1,6 +1,6 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'selfie_verification_screen.dart'; 
+import 'selfie_verification_screen.dart';
 
 class IdCaptureScreen extends StatefulWidget {
   const IdCaptureScreen({super.key});
@@ -24,11 +24,17 @@ class _IdCaptureScreenState extends State<IdCaptureScreen> {
     if (cameras.isEmpty) return;
 
     // Use the back camera for ID scanning
-    final backCamera = cameras.firstWhere((c) => c.lensDirection == CameraLensDirection.back);
-    
-    _controller = CameraController(backCamera, ResolutionPreset.high, enableAudio: false);
+    final backCamera = cameras.firstWhere(
+      (c) => c.lensDirection == CameraLensDirection.back,
+    );
+
+    _controller = CameraController(
+      backCamera,
+      ResolutionPreset.high,
+      enableAudio: false,
+    );
     await _controller!.initialize();
-    
+
     if (!mounted) return;
     setState(() => _isInitialized = true);
   }
@@ -57,7 +63,7 @@ class _IdCaptureScreenState extends State<IdCaptureScreen> {
           Positioned.fill(
             child: ColorFiltered(
               colorFilter: ColorFilter.mode(
-                Colors.black.withOpacity(0.7),
+                Colors.black.withValues(alpha: 0.7),
                 BlendMode.srcOut,
               ),
               child: Stack(
@@ -73,7 +79,9 @@ class _IdCaptureScreenState extends State<IdCaptureScreen> {
                     alignment: Alignment.center,
                     child: Container(
                       width: MediaQuery.of(context).size.width * 0.85,
-                      height: (MediaQuery.of(context).size.width * 0.85) * 0.63, // ID Card aspect ratio
+                      height:
+                          (MediaQuery.of(context).size.width * 0.85) *
+                          0.63, // ID Card aspect ratio
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
@@ -93,7 +101,11 @@ class _IdCaptureScreenState extends State<IdCaptureScreen> {
                   padding: EdgeInsets.all(20),
                   child: Text(
                     "SCAN FRONT OF ID",
-                    style: TextStyle(color: gold, fontWeight: FontWeight.bold, letterSpacing: 2),
+                    style: TextStyle(
+                      color: gold,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 2,
+                    ),
                   ),
                 ),
                 const Spacer(),
@@ -108,7 +120,7 @@ class _IdCaptureScreenState extends State<IdCaptureScreen> {
               ],
             ),
           ),
-          
+
           // Back button
           Positioned(
             top: 50,
@@ -127,26 +139,35 @@ class _IdCaptureScreenState extends State<IdCaptureScreen> {
     return GestureDetector(
       onTap: () async {
         if (_controller == null || !_controller!.value.isInitialized) return;
-        
+
         try {
-          final image = await _controller!.takePicture();
-          // In a real app, you'd send image.path to your backend for OCR
+          final idImage = await _controller!.takePicture();
           if (!mounted) return;
-          
+
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => SelfieVerificationScreen()), // Remove 'const'
+            MaterialPageRoute(
+              builder: (context) =>
+                  SelfieVerificationScreen(idImagePath: idImage.path),
+            ),
           );
         } catch (e) {
-          print("Error taking picture: $e");
+          debugPrint("Error taking picture: $e");
         }
       },
       child: Container(
-        height: 80, width: 80,
+        height: 80,
+        width: 80,
         padding: const EdgeInsets.all(5),
-        decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.white, width: 4)),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.white, width: 4),
+        ),
         child: Container(
-          decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+          ),
         ),
       ),
     );

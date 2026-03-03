@@ -8,9 +8,9 @@ class ChatDetailScreen extends StatefulWidget {
   final Map<String, dynamic> otherUser;
 
   const ChatDetailScreen({
-    super.key, 
-    required this.chatId, 
-    required this.otherUser
+    super.key,
+    required this.chatId,
+    required this.otherUser,
   });
 
   @override
@@ -40,19 +40,19 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         .doc(widget.chatId)
         .collection('messages')
         .add({
-      'senderId': currentUserId,
-      'text': messageText,
-      'timestamp': FieldValue.serverTimestamp(),
-    });
+          'senderId': currentUserId,
+          'text': messageText,
+          'timestamp': FieldValue.serverTimestamp(),
+        });
 
     // 2. Update last message preview
     await FirebaseFirestore.instance
         .collection('chats')
         .doc(widget.chatId)
         .update({
-      'lastMessage': messageText,
-      'timestamp': FieldValue.serverTimestamp(),
-    });
+          'lastMessage': messageText,
+          'timestamp': FieldValue.serverTimestamp(),
+        });
 
     // Auto-scroll to bottom
     if (_scrollController.hasClients) {
@@ -74,14 +74,18 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         title: Row(
           children: [
             CircleAvatar(
-              backgroundImage: widget.otherUser['profileImageUrl'] != null 
-                  ? NetworkImage(widget.otherUser['profileImageUrl']) 
+              backgroundImage: widget.otherUser['profileImageUrl'] != null
+                  ? NetworkImage(widget.otherUser['profileImageUrl'])
                   : null,
-              child: widget.otherUser['profileImageUrl'] == null ? const Icon(Icons.person) : null,
+              child: widget.otherUser['profileImageUrl'] == null
+                  ? const Icon(Icons.person)
+                  : null,
             ),
             const SizedBox(width: 12),
-            Text(widget.otherUser['name'] ?? "Chat", 
-                 style: const TextStyle(color: Colors.white, fontSize: 18)),
+            Text(
+              widget.otherUser['name'] ?? "Chat",
+              style: const TextStyle(color: Colors.white, fontSize: 18),
+            ),
           ],
         ),
       ),
@@ -97,7 +101,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                   .snapshots(),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
-                  return const Center(child: CircularProgressIndicator(color: habeshaGold));
+                  return const Center(
+                    child: CircularProgressIndicator(color: habeshaGold),
+                  );
                 }
 
                 final messages = snapshot.data!.docs;
@@ -108,7 +114,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                   padding: const EdgeInsets.all(16),
                   itemCount: messages.length,
                   itemBuilder: (context, index) {
-                    final msgData = messages[index].data() as Map<String, dynamic>;
+                    final msgData =
+                        messages[index].data() as Map<String, dynamic>;
                     final bool isMe = msgData['senderId'] == currentUserId;
                     return _buildMessageBubble(msgData, isMe);
                   },
@@ -128,7 +135,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 5),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.75,
+        ),
         decoration: BoxDecoration(
           color: isMe ? chatBubbleMe : chatBubbleThem,
           borderRadius: BorderRadius.only(
@@ -143,16 +152,21 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           children: [
             Text(
               msg['text'] ?? "",
-              style: TextStyle(color: isMe ? Colors.black : Colors.white, fontSize: 16),
+              style: TextStyle(
+                color: isMe ? Colors.black : Colors.white,
+                fontSize: 16,
+              ),
             ),
             const SizedBox(height: 4),
             Text(
-              msg['timestamp'] != null 
-                  ? DateFormat('jm').format((msg['timestamp'] as Timestamp).toDate()) 
+              msg['timestamp'] != null
+                  ? DateFormat(
+                      'jm',
+                    ).format((msg['timestamp'] as Timestamp).toDate())
                   : "",
               style: TextStyle(
-                color: isMe ? Colors.black54 : Colors.white38, 
-                fontSize: 10
+                color: isMe ? Colors.black54 : Colors.white38,
+                fontSize: 10,
               ),
             ),
           ],
@@ -180,7 +194,10 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                   borderRadius: BorderRadius.circular(30),
                   borderSide: BorderSide.none,
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
+                ),
               ),
             ),
           ),

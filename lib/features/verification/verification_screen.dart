@@ -38,13 +38,21 @@ class VerificationScreen extends StatelessWidget {
             const SizedBox(height: 10),
             const Text(
               "Get Verified",
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
             const SizedBox(height: 12),
             const Text(
               "Boost your profile trust and connect with authentic Ethiopian professionals using Fayda National ID.",
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white54, fontSize: 14, height: 1.5),
+              style: TextStyle(
+                color: Colors.white54,
+                fontSize: 14,
+                height: 1.5,
+              ),
             ),
             const SizedBox(height: 35),
 
@@ -62,7 +70,8 @@ class VerificationScreen extends StatelessWidget {
             _verificationStep(
               icon: Icons.face_retouching_natural, // Replaced face_unlock
               title: "Face Scan",
-              subtitle: "A quick video selfie to confirm your identity matches the ID.",
+              subtitle:
+                  "A quick video selfie to confirm your identity matches the ID.",
               isLast: false,
             ),
             _verificationStep(
@@ -77,7 +86,7 @@ class VerificationScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.05),
+                color: Colors.white.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(15),
                 border: Border.all(color: Colors.white10),
               ),
@@ -88,7 +97,11 @@ class VerificationScreen extends StatelessWidget {
                   Expanded(
                     child: Text(
                       "Your data is encrypted and handled according to Ethiopian Data Protection regulations.",
-                      style: TextStyle(color: Colors.white38, fontSize: 11, height: 1.4),
+                      style: TextStyle(
+                        color: Colors.white38,
+                        fontSize: 11,
+                        height: 1.4,
+                      ),
                     ),
                   ),
                 ],
@@ -120,7 +133,11 @@ class VerificationScreen extends StatelessWidget {
           Positioned(
             right: 15,
             top: 15,
-            child: Icon(Icons.security, size: 70, color: Colors.white.withOpacity(0.1)), // Replaced shield_person
+            child: Icon(
+              Icons.security,
+              size: 70,
+              color: Colors.white.withValues(alpha: 0.1),
+            ), // Replaced shield_person
           ),
           Padding(
             padding: const EdgeInsets.all(22),
@@ -133,11 +150,20 @@ class VerificationScreen extends StatelessWidget {
                   children: [
                     Text(
                       "FEDERAL DEMOCRATIC REPUBLIC\nOF ETHIOPIA",
-                      style: TextStyle(color: Colors.white70, fontSize: 7, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 7,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
                     ),
                     Text(
                       "FAYDA ID",
-                      style: TextStyle(color: habeshaGold, fontSize: 10, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        color: habeshaGold,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ],
                 ),
@@ -146,36 +172,76 @@ class VerificationScreen extends StatelessWidget {
                     Container(
                       height: 65,
                       width: 55,
-                      decoration: BoxDecoration(color: Colors.white.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-                      child: Icon(Icons.person, color: Colors.white.withOpacity(0.2), size: 40),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        Icons.person,
+                        color: Colors.white.withValues(alpha: 0.2),
+                        size: 40,
+                      ),
                     ),
                     const SizedBox(width: 15),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(height: 10, width: 120, decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(5))),
+                        Container(
+                          height: 10,
+                          width: 120,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                        ),
                         const SizedBox(height: 8),
-                        Container(height: 10, width: 90, decoration: BoxDecoration(color: Colors.white.withOpacity(0.1), borderRadius: BorderRadius.circular(5))),
+                        Container(
+                          height: 10,
+                          width: 90,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                        ),
                       ],
-                    )
+                    ),
                   ],
                 ),
                 const Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text("0000 0000 0000", style: TextStyle(color: Colors.white38, fontSize: 10, letterSpacing: 1.5)),
-                    Text("NATIONAL ID CARD", style: TextStyle(color: Colors.white24, fontSize: 7, fontWeight: FontWeight.bold)),
+                    Text(
+                      "0000 0000 0000",
+                      style: TextStyle(
+                        color: Colors.white38,
+                        fontSize: 10,
+                        letterSpacing: 1.5,
+                      ),
+                    ),
+                    Text(
+                      "NATIONAL ID CARD",
+                      style: TextStyle(
+                        color: Colors.white24,
+                        fontSize: 7,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ],
                 ),
               ],
             ),
-          )
+          ),
         ],
       ),
     );
   }
 
-  Widget _verificationStep({required IconData icon, required String title, required String subtitle, required bool isLast}) {
+  Widget _verificationStep({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required bool isLast,
+  }) {
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -185,15 +251,19 @@ class VerificationScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: habeshaGold.withOpacity(0.1),
+                  color: habeshaGold.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
-                  border: Border.all(color: habeshaGold.withOpacity(0.2)),
+                  border: Border.all(color: habeshaGold.withValues(alpha: 0.2)),
                 ),
                 child: Icon(icon, color: habeshaGold, size: 20),
               ),
               if (!isLast)
                 Expanded(
-                  child: Container(width: 2, color: Colors.white10, margin: const EdgeInsets.symmetric(vertical: 4)),
+                  child: Container(
+                    width: 2,
+                    color: Colors.white10,
+                    margin: const EdgeInsets.symmetric(vertical: 4),
+                  ),
                 ),
             ],
           ),
@@ -204,9 +274,23 @@ class VerificationScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 15)),
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      fontSize: 15,
+                    ),
+                  ),
                   const SizedBox(height: 4),
-                  Text(subtitle, style: const TextStyle(color: Colors.white38, fontSize: 13, height: 1.3)),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(
+                      color: Colors.white38,
+                      fontSize: 13,
+                      height: 1.3,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -224,17 +308,25 @@ class VerificationScreen extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: habeshaEmerald,
           minimumSize: const Size(double.infinity, 55),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
         ),
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => IdCaptureScreen()), // Remove const
+            MaterialPageRoute(
+              builder: (context) => IdCaptureScreen(),
+            ), // Remove const
           );
         },
         child: const Text(
           "Start Verification",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+          ),
         ),
       ),
     );

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/auth/login_screen.dart';
+import '../../features/auth/complete_profile_screen.dart';
+import '../../features/auth/register_screen.dart';
 import '../../features/discovery/discovery_screen.dart';
 import '../../features/chat/chat_list_screen.dart';
 import '../../features/chat/chat_room_screen.dart';
@@ -20,7 +22,18 @@ class AppRouter {
     routes: [
       GoRoute(
         path: '/',
+        name: 'login',
         builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: '/register',
+        name: 'register',
+        builder: (context, state) => const RegisterScreen(),
+      ),
+      GoRoute(
+        path: '/complete-profile',
+        name: 'complete-profile',
+        builder: (context, state) => const CompleteProfileScreen(),
       ),
 
       // GLOBAL ROUTE: Chat Room
@@ -37,7 +50,8 @@ class AppRouter {
       // GLOBAL ROUTE: Verification (FIXED)
       GoRoute(
         path: '/verification',
-        parentNavigatorKey: _rootNavigatorKey, // This makes it cover the bottom bar
+        parentNavigatorKey:
+            _rootNavigatorKey, // This makes it cover the bottom bar
         builder: (context, state) => const VerificationScreen(),
       ),
 
@@ -48,33 +62,45 @@ class AppRouter {
         branches: [
           StatefulShellBranch(
             routes: [
-              GoRoute(path: '/discovery', builder: (context, state) => const DiscoveryScreen()),
-              GoRoute(path: '/profile_details/:userId', builder: (context, state) {
-                final userId = state.pathParameters['userId']!;
-                return ProfileDetailsScreen(userId: userId);
-              }),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(path: '/chat', builder: (context, state) => const ChatListScreen()),
+              GoRoute(
+                path: '/discovery',
+                builder: (context, state) => const DiscoveryScreen(),
+              ),
+              GoRoute(
+                path: '/profile_details/:userId',
+                builder: (context, state) {
+                  final userId = state.pathParameters['userId']!;
+                  return ProfileDetailsScreen(userId: userId);
+                },
+              ),
             ],
           ),
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/profile_view', 
+                path: '/chat',
+                builder: (context, state) => const ChatListScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/profile_view',
                 builder: (context, state) => const ProfileViewScreen(),
               ),
               GoRoute(
-                path: '/profile_edit', 
+                path: '/profile_edit',
                 builder: (context, state) => const ProfileEditScreen(),
               ),
             ],
           ),
           StatefulShellBranch(
             routes: [
-              GoRoute(path: '/settings', builder: (context, state) => const SettingsScreen()),
+              GoRoute(
+                path: '/settings',
+                builder: (context, state) => const SettingsScreen(),
+              ),
             ],
           ),
         ],
@@ -97,12 +123,21 @@ class ScaffoldWithNavBar extends StatelessWidget {
         currentIndex: navigationShell.currentIndex,
         selectedItemColor: const Color(0xFFD4AF35),
         unselectedItemColor: Colors.white38,
-        onTap: (index) => navigationShell.goBranch(index, initialLocation: index == navigationShell.currentIndex),
+        onTap: (index) => navigationShell.goBranch(
+          index,
+          initialLocation: index == navigationShell.currentIndex,
+        ),
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.explore), label: 'Discover'),
-          BottomNavigationBarItem(icon: Icon(Icons.chat_bubble), label: 'Chats'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.chat_bubble),
+            label: 'Chats',
+          ),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: 'Settings',
+          ),
         ],
       ),
     );

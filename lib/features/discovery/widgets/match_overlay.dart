@@ -22,7 +22,7 @@ class MatchOverlay extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       // High opacity black to keep the focus on the match
-      backgroundColor: Colors.black.withOpacity(0.95),
+      backgroundColor: Colors.black.withValues(alpha: 0.95),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -42,7 +42,7 @@ class MatchOverlay extends StatelessWidget {
               "You and $partnerName liked each other.",
               style: const TextStyle(color: Colors.white70, fontSize: 16),
             ),
-            
+
             const SizedBox(height: 60),
 
             // 2. The Overlapping Profile Circles
@@ -65,12 +65,17 @@ class MatchOverlay extends StatelessWidget {
                       backgroundColor: habeshaGold,
                       foregroundColor: Colors.black,
                       minimumSize: const Size(double.infinity, 60),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(35)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(35),
+                      ),
                       elevation: 5,
                     ),
                     child: const Text(
                       "SEND A MESSAGE",
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -79,7 +84,9 @@ class MatchOverlay extends StatelessWidget {
                     style: OutlinedButton.styleFrom(
                       side: const BorderSide(color: Colors.white38, width: 1.5),
                       minimumSize: const Size(double.infinity, 60),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(35)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(35),
+                      ),
                     ),
                     child: const Text(
                       "KEEP SWIPING",
@@ -107,13 +114,13 @@ class MatchOverlay extends StatelessWidget {
             left: 10,
             child: _profileCircle(partnerImageUrl, Icons.person),
           ),
-          
+
           // Your Photo (Positioned Right)
           Positioned(
             right: 10,
             child: _profileCircle(myImageUrl, Icons.account_circle),
           ),
-          
+
           // Centered Heart Icon to bridge the two photos
           Container(
             padding: const EdgeInsets.all(8),
@@ -141,7 +148,7 @@ class MatchOverlay extends StatelessWidget {
         border: Border.all(color: habeshaGold, width: 3),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.5),
+            color: Colors.black.withValues(alpha: 0.5),
             blurRadius: 10,
             spreadRadius: 2,
           ),
@@ -152,8 +159,10 @@ class MatchOverlay extends StatelessWidget {
             ? CachedNetworkImage(
                 imageUrl: url,
                 fit: BoxFit.cover,
-                placeholder: (context, url) => Container(color: Colors.grey[900]),
-                errorWidget: (context, url, error) => Icon(fallback, color: Colors.white24, size: 50),
+                placeholder: (context, url) =>
+                    Container(color: Colors.grey[900]),
+                errorWidget: (context, url, error) =>
+                    Icon(fallback, color: Colors.white24, size: 50),
               )
             : Container(
                 color: Colors.grey[900],

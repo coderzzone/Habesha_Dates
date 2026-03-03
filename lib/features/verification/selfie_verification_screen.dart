@@ -3,10 +3,13 @@ import 'package:flutter/material.dart';
 import 'verification_success_screen.dart';
 
 class SelfieVerificationScreen extends StatefulWidget {
-  const SelfieVerificationScreen({super.key});
+  const SelfieVerificationScreen({required this.idImagePath, super.key});
+
+  final String idImagePath;
 
   @override
-  State<SelfieVerificationScreen> createState() => _SelfieVerificationScreenState();
+  State<SelfieVerificationScreen> createState() =>
+      _SelfieVerificationScreenState();
 }
 
 class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
@@ -22,11 +25,17 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
   Future<void> _initializeCamera() async {
     final cameras = await availableCameras();
     // Use FRONT camera for selfie
-    final frontCamera = cameras.firstWhere((c) => c.lensDirection == CameraLensDirection.front);
-    
-    _controller = CameraController(frontCamera, ResolutionPreset.high, enableAudio: false);
+    final frontCamera = cameras.firstWhere(
+      (c) => c.lensDirection == CameraLensDirection.front,
+    );
+
+    _controller = CameraController(
+      frontCamera,
+      ResolutionPreset.high,
+      enableAudio: false,
+    );
     await _controller!.initialize();
-    
+
     if (!mounted) return;
     setState(() => _isInitialized = true);
   }
@@ -67,19 +76,41 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
               children: [
                 const Padding(
                   padding: EdgeInsets.all(20),
-                  child: Text("SELFIE VERIFICATION", style: TextStyle(color: gold, fontWeight: FontWeight.bold)),
+                  child: Text(
+                    "SELFIE VERIFICATION",
+                    style: TextStyle(color: gold, fontWeight: FontWeight.bold),
+                  ),
                 ),
                 const Spacer(),
-                const Text("Position your face in the circle", style: TextStyle(color: Colors.white)),
+                const Text(
+                  "Position your face in the circle",
+                  style: TextStyle(color: Colors.white),
+                ),
                 const SizedBox(height: 30),
                 IconButton(
                   icon: const Icon(Icons.camera, color: Colors.white, size: 70),
-                  onPressed: () {
-                    // In real app: capture and upload
-                    Navigator.push(
-                      context, 
-                      MaterialPageRoute(builder: (context) => const VerificationSuccessScreen())
-                    );
+                  onPressed: () async {
+                    if (_controller == null ||
+                        !_controller!.value.isInitialized) {
+                      return;
+                    }
+
+                    try {
+                      final selfieImage = await _controller!.takePicture();
+                      if (!context.mounted) return;
+
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => VerificationSuccessScreen(
+                            idImagePath: widget.idImagePath,
+                            selfieImagePath: selfieImage.path,
+                          ),
+                        ),
+                      );
+                    } catch (e) {
+                      debugPrint("Error capturing selfie: $e");
+                    }
                   },
                 ),
                 const SizedBox(height: 40),

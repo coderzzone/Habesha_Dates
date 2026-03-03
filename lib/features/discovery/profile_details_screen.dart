@@ -14,7 +14,7 @@ class ProfileDetailsScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: backgroundDark,
       // Transparent AppBar to show image behind it
-      extendBodyBehindAppBar: true, 
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -27,10 +27,15 @@ class ProfileDetailsScreen extends StatelessWidget {
         ),
       ),
       body: FutureBuilder<DocumentSnapshot>(
-        future: FirebaseFirestore.instance.collection('users').doc(userId).get(),
+        future: FirebaseFirestore.instance
+            .collection('users')
+            .doc(userId)
+            .get(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator(color: habeshaGold));
+            return const Center(
+              child: CircularProgressIndicator(color: habeshaGold),
+            );
           }
 
           final data = snapshot.data!.data() as Map<String, dynamic>;
@@ -41,19 +46,22 @@ class ProfileDetailsScreen extends StatelessWidget {
               children: [
                 // Profile Image Header
                 Hero(
-                  tag: userId, // Match this with the discovery card for a smooth transition
+                  tag:
+                      userId, // Match this with the discovery card for a smooth transition
                   child: Container(
                     height: MediaQuery.of(context).size.height * 0.6,
                     width: double.infinity,
                     decoration: BoxDecoration(
                       image: DecorationImage(
-                        image: CachedNetworkImageProvider(data['profileImageUrl'] ?? ''),
+                        image: CachedNetworkImageProvider(
+                          data['profileImageUrl'] ?? '',
+                        ),
                         fit: BoxFit.cover,
                       ),
                     ),
                   ),
                 ),
-                
+
                 Padding(
                   padding: const EdgeInsets.all(24.0),
                   child: Column(
@@ -61,22 +69,38 @@ class ProfileDetailsScreen extends StatelessWidget {
                     children: [
                       Text(
                         "${data['name'] ?? 'Anonymous'}, ${data['age'] ?? '??'}",
-                        style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         "${data['heritage'] ?? 'Habesha'} • ${data['religion'] ?? 'General'}",
-                        style: const TextStyle(color: habeshaGold, fontSize: 18, fontWeight: FontWeight.w500),
+                        style: const TextStyle(
+                          color: habeshaGold,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                       const Divider(color: Colors.white12, height: 40),
                       const Text(
                         "About Me",
-                        style: TextStyle(color: Colors.white70, fontSize: 20, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       const SizedBox(height: 10),
                       Text(
                         data['bio'] ?? "No bio provided yet.",
-                        style: const TextStyle(color: Colors.white54, fontSize: 16, height: 1.5),
+                        style: const TextStyle(
+                          color: Colors.white54,
+                          fontSize: 16,
+                          height: 1.5,
+                        ),
                       ),
                       const SizedBox(height: 100), // Space for floating buttons
                     ],

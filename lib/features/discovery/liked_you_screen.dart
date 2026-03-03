@@ -8,9 +8,9 @@ class LikedYouScreen extends StatelessWidget {
 
   static const Color habeshaGold = Color(0xFFD4AF35);
   static const Color backgroundDark = Color(0xFF0A0A0A);
-  
+
   // Logic to determine if we should blur (you can link this to user.isPremium later)
-  final bool isPremium = false; 
+  final bool isPremium = false;
 
   String get currentUserId => FirebaseAuth.instance.currentUser?.uid ?? "";
 
@@ -20,7 +20,10 @@ class LikedYouScreen extends StatelessWidget {
       backgroundColor: backgroundDark,
       appBar: AppBar(
         backgroundColor: Colors.black,
-        title: const Text("LIKES YOU", style: TextStyle(color: habeshaGold, fontWeight: FontWeight.bold)),
+        title: const Text(
+          "LIKES YOU",
+          style: TextStyle(color: habeshaGold, fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
       ),
       body: StreamBuilder<QuerySnapshot>(
@@ -29,16 +32,18 @@ class LikedYouScreen extends StatelessWidget {
             .where('to', isEqualTo: currentUserId)
             .snapshots(),
         builder: (context, snapshot) {
-          if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
           final likes = snapshot.data!.docs;
 
           return GridView.builder(
             padding: const EdgeInsets.all(16),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2, 
-              childAspectRatio: 0.7, 
-              crossAxisSpacing: 15, 
-              mainAxisSpacing: 15
+              crossAxisCount: 2,
+              childAspectRatio: 0.7,
+              crossAxisSpacing: 15,
+              mainAxisSpacing: 15,
             ),
             itemCount: likes.length,
             itemBuilder: (context, index) {
@@ -55,7 +60,14 @@ class LikedYouScreen extends StatelessWidget {
     return FutureBuilder<DocumentSnapshot>(
       future: FirebaseFirestore.instance.collection('users').doc(userId).get(),
       builder: (context, snap) {
-        if (!snap.hasData) return Container(decoration: BoxDecoration(color: Colors.white10, borderRadius: BorderRadius.circular(20)));
+        if (!snap.hasData) {
+          return Container(
+            decoration: BoxDecoration(
+              color: Colors.white10,
+              borderRadius: BorderRadius.circular(20),
+            ),
+          );
+        }
         final user = snap.data!.data() as Map<String, dynamic>;
 
         return ClipRRect(
@@ -64,15 +76,20 @@ class LikedYouScreen extends StatelessWidget {
             children: [
               // 1. The Image
               Positioned.fill(
-                child: Image.network(user['profileImageUrl'] ?? "", fit: BoxFit.cover),
+                child: Image.network(
+                  user['profileImageUrl'] ?? "",
+                  fit: BoxFit.cover,
+                ),
               ),
-              
+
               // 2. The Blur Effect (Conditional)
               if (!isPremium)
                 Positioned.fill(
                   child: BackdropFilter(
                     filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                    child: Container(color: Colors.black.withOpacity(0.3)),
+                    child: Container(
+                      color: Colors.black.withValues(alpha: 0.3),
+                    ),
                   ),
                 ),
 
@@ -83,7 +100,10 @@ class LikedYouScreen extends StatelessWidget {
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: [Colors.transparent, Colors.black.withOpacity(0.8)],
+                      colors: [
+                        Colors.transparent,
+                        Colors.black.withValues(alpha: 0.8),
+                      ],
                     ),
                   ),
                   child: Padding(
@@ -94,10 +114,16 @@ class LikedYouScreen extends StatelessWidget {
                       children: [
                         Text(
                           isPremium ? user['name'] : "Someone new",
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         if (!isPremium)
-                          const Text("Upgrade to see", style: TextStyle(color: habeshaGold, fontSize: 10)),
+                          const Text(
+                            "Upgrade to see",
+                            style: TextStyle(color: habeshaGold, fontSize: 10),
+                          ),
                       ],
                     ),
                   ),

@@ -34,7 +34,11 @@ class _GoldMembershipScreenState extends State<GoldMembershipScreen> {
                   ),
                   const Text(
                     "Gold Membership",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
                   const Icon(Icons.help_outline, color: Colors.white),
                 ],
@@ -50,12 +54,19 @@ class _GoldMembershipScreenState extends State<GoldMembershipScreen> {
                     _buildHeroCard(),
 
                     const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 15,
+                      ),
                       child: Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
                           "Premium Benefits",
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ),
@@ -70,12 +81,19 @@ class _GoldMembershipScreenState extends State<GoldMembershipScreen> {
 
                     // 4. PRICING SELECTION
                     const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 10,
+                      ),
                       child: Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
                           "Select Your Plan",
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ),
@@ -106,7 +124,11 @@ class _GoldMembershipScreenState extends State<GoldMembershipScreen> {
           end: Alignment.bottomRight,
         ),
         boxShadow: [
-          BoxShadow(color: habeshaGold.withOpacity(0.3), blurRadius: 20, spreadRadius: 2)
+          BoxShadow(
+            color: habeshaGold.withValues(alpha: 0.3),
+            blurRadius: 20,
+            spreadRadius: 2,
+          ),
         ],
       ),
       child: Stack(
@@ -114,7 +136,11 @@ class _GoldMembershipScreenState extends State<GoldMembershipScreen> {
           Positioned(
             right: -20,
             top: -20,
-            child: Icon(Icons.workspace_premium, size: 200, color: Colors.white.withOpacity(0.1)),
+            child: Icon(
+              Icons.workspace_premium,
+              size: 200,
+              color: Colors.white.withValues(alpha: 0.1),
+            ),
           ),
           Padding(
             padding: const EdgeInsets.all(25),
@@ -129,7 +155,7 @@ class _GoldMembershipScreenState extends State<GoldMembershipScreen> {
                     Text(
                       "PREMIUM STATUS",
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.8),
+                        color: Colors.white.withValues(alpha: 0.8),
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 2,
@@ -139,7 +165,11 @@ class _GoldMembershipScreenState extends State<GoldMembershipScreen> {
                 ),
                 const Text(
                   "Elevate Your Connection",
-                  style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const Text(
                   "Unlock the best of Habesha Dates",
@@ -147,7 +177,7 @@ class _GoldMembershipScreenState extends State<GoldMembershipScreen> {
                 ),
               ],
             ),
-          )
+          ),
         ],
       ),
     );
@@ -158,7 +188,7 @@ class _GoldMembershipScreenState extends State<GoldMembershipScreen> {
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
       padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(15),
         border: Border.all(color: Colors.white10),
       ),
@@ -167,7 +197,7 @@ class _GoldMembershipScreenState extends State<GoldMembershipScreen> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: habeshaGold.withOpacity(0.1),
+              color: habeshaGold.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
             child: const Icon(Icons.check, color: habeshaGold, size: 18),
@@ -175,7 +205,10 @@ class _GoldMembershipScreenState extends State<GoldMembershipScreen> {
           const SizedBox(width: 15),
           Text(
             title,
-            style: const TextStyle(fontWeight: FontWeight.w500, color: Colors.white),
+            style: const TextStyle(
+              fontWeight: FontWeight.w500,
+              color: Colors.white,
+            ),
           ),
           const Spacer(),
           const Icon(Icons.check_circle, color: habeshaGold, size: 20),
@@ -197,7 +230,13 @@ class _GoldMembershipScreenState extends State<GoldMembershipScreen> {
     );
   }
 
-  Widget _pricingCard(int index, String duration, String price, String sub, String save) {
+  Widget _pricingCard(
+    int index,
+    String duration,
+    String price,
+    String sub,
+    String save,
+  ) {
     bool isSelected = selectedPlan == index;
     bool isBestValue = index == 1;
 
@@ -208,9 +247,14 @@ class _GoldMembershipScreenState extends State<GoldMembershipScreen> {
           height: 155,
           margin: const EdgeInsets.symmetric(horizontal: 5),
           decoration: BoxDecoration(
-            color: isSelected ? habeshaEmerald.withOpacity(0.3) : Colors.white.withOpacity(0.05),
+            color: isSelected
+                ? habeshaEmerald.withValues(alpha: 0.3)
+                : Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(15),
-            border: Border.all(color: isSelected ? habeshaGold : Colors.white10, width: 2),
+            border: Border.all(
+              color: isSelected ? habeshaGold : Colors.white10,
+              width: 2,
+            ),
           ),
           child: Stack(
             clipBehavior: Clip.none,
@@ -222,8 +266,14 @@ class _GoldMembershipScreenState extends State<GoldMembershipScreen> {
                   right: 0,
                   child: Center(
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(color: habeshaGold, borderRadius: BorderRadius.circular(20)),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: habeshaGold,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
                       child: const Text(
                         "BEST VALUE",
                         style: TextStyle(
@@ -250,9 +300,19 @@ class _GoldMembershipScreenState extends State<GoldMembershipScreen> {
                     const SizedBox(height: 8),
                     Text(
                       price,
-                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
-                    Text(sub, style: const TextStyle(color: Colors.white38, fontSize: 10)),
+                    Text(
+                      sub,
+                      style: const TextStyle(
+                        color: Colors.white38,
+                        fontSize: 10,
+                      ),
+                    ),
                     if (save.isNotEmpty) ...[
                       const SizedBox(height: 5),
                       Text(
@@ -264,7 +324,7 @@ class _GoldMembershipScreenState extends State<GoldMembershipScreen> {
                           fontStyle: FontStyle.italic,
                         ),
                       ),
-                    ]
+                    ],
                   ],
                 ),
               ),
@@ -291,7 +351,9 @@ class _GoldMembershipScreenState extends State<GoldMembershipScreen> {
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: habeshaGold,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
                 elevation: 5,
               ),
               onPressed: () {
@@ -310,7 +372,11 @@ class _GoldMembershipScreenState extends State<GoldMembershipScreen> {
                   SizedBox(width: 10),
                   Text(
                     "Upgrade to Gold",
-                    style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16),
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
                   ),
                 ],
               ),

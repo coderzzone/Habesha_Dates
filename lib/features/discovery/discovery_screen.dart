@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'widgets/match_overlay.dart'; 
+import 'widgets/match_overlay.dart';
 
 class DiscoveryScreen extends StatefulWidget {
   const DiscoveryScreen({super.key});
@@ -15,13 +15,12 @@ class DiscoveryScreen extends StatefulWidget {
 
 class _DiscoveryScreenState extends State<DiscoveryScreen> {
   static const Color habeshaGold = Color(0xFFD4AF35);
-  static const Color backgroundDark = Color(0xFF0A0A0A);
   static const Color cardGrey = Color(0xFF1A1A1A);
 
   final CardSwiperController _swiperController = CardSwiperController();
-  String? _myProfileUrl; 
-  String? _lastSwipedUserId; 
-  
+  String? _myProfileUrl;
+  String? _lastSwipedUserId;
+
   String get currentUserId => FirebaseAuth.instance.currentUser?.uid ?? "";
 
   @override
@@ -33,7 +32,10 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
   Future<void> _fetchMyProfileImage() async {
     if (currentUserId.isEmpty) return;
     try {
-      final doc = await FirebaseFirestore.instance.collection('users').doc(currentUserId).get();
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUserId)
+          .get();
       if (doc.exists && mounted) {
         setState(() {
           _myProfileUrl = doc.data()?['profileImageUrl'];
@@ -51,27 +53,39 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
   }
 
   // --- LOGIC ---
-  Future<void> _handleSwipe(DocumentSnapshot doc, CardSwiperDirection direction) async {
+  Future<void> _handleSwipe(
+    DocumentSnapshot doc,
+    CardSwiperDirection direction,
+  ) async {
     final targetUid = doc.id;
     final targetData = doc.data() as Map<String, dynamic>;
     _lastSwipedUserId = targetUid;
 
     if (direction == CardSwiperDirection.right) {
-      await FirebaseFirestore.instance.collection('likes').doc('${currentUserId}_$targetUid').set({
-        'from': currentUserId,
-        'to': targetUid,
-        'timestamp': FieldValue.serverTimestamp(),
-      });
+      await FirebaseFirestore.instance
+          .collection('likes')
+          .doc('${currentUserId}_$targetUid')
+          .set({
+            'from': currentUserId,
+            'to': targetUid,
+            'timestamp': FieldValue.serverTimestamp(),
+          });
 
-      final mutualDoc = await FirebaseFirestore.instance.collection('likes').doc('${targetUid}_$currentUserId').get();
+      final mutualDoc = await FirebaseFirestore.instance
+          .collection('likes')
+          .doc('${targetUid}_$currentUserId')
+          .get();
       if (mutualDoc.exists && mounted) {
         List<String> ids = [currentUserId, targetUid]..sort();
         String chatRoomId = ids.join("_");
-        await FirebaseFirestore.instance.collection('chats').doc(chatRoomId).set({
-          'users': ids,
-          'lastMessage': "It's a match! Say hello.",
-          'timestamp': FieldValue.serverTimestamp(),
-        }, SetOptions(merge: true));
+        await FirebaseFirestore.instance
+            .collection('chats')
+            .doc(chatRoomId)
+            .set({
+              'users': ids,
+              'lastMessage': "It's a match! Say hello.",
+              'timestamp': FieldValue.serverTimestamp(),
+            }, SetOptions(merge: true));
 
         _triggerMatchOverlay(targetData, chatRoomId);
       }
@@ -81,7 +95,10 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
   void _handleUndo() async {
     if (_lastSwipedUserId != null) {
       _swiperController.undo();
-      await FirebaseFirestore.instance.collection('likes').doc('${currentUserId}_$_lastSwipedUserId').delete();
+      await FirebaseFirestore.instance
+          .collection('likes')
+          .doc('${currentUserId}_$_lastSwipedUserId')
+          .delete();
       setState(() => _lastSwipedUserId = null);
     }
   }
@@ -89,8 +106,8 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
   void _triggerMatchOverlay(Map<String, dynamic> targetUser, String chatId) {
     showGeneralDialog(
       context: context,
-      barrierColor: Colors.black.withOpacity(0.9),
-      pageBuilder: (context, _, __) => MatchOverlay(
+      barrierColor: Colors.black.withValues(alpha: 0.9),
+      pageBuilder: (context, animation, secondaryAnimation) => MatchOverlay(
         myImageUrl: _myProfileUrl ?? "",
         partnerImageUrl: targetUser['profileImageUrl'] ?? "",
         partnerName: targetUser['name'] ?? "Someone",
@@ -108,11 +125,19 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
           _buildTopNav(),
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance.collection('users').snapshots(),
+              stream: FirebaseFirestore.instance
+                  .collection('users')
+                  .snapshots(),
               builder: (context, snapshot) {
-                if (!snapshot.hasData) return const Center(child: CircularProgressIndicator(color: habeshaGold));
-                
-                final docs = snapshot.data!.docs.where((d) => d.id != currentUserId).toList();
+                if (!snapshot.hasData) {
+                  return const Center(
+                    child: CircularProgressIndicator(color: habeshaGold),
+                  );
+                }
+
+                final docs = snapshot.data!.docs
+                    .where((d) => d.id != currentUserId)
+                    .toList();
                 if (docs.isEmpty) return _buildEmptyState();
 
                 return CardSwiper(
@@ -120,7 +145,10 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                   cardsCount: docs.length,
                   numberOfCardsDisplayed: docs.length > 1 ? 2 : 1,
                   backCardOffset: const Offset(0, 40),
-                  padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 15,
+                    vertical: 10,
+                  ),
                   onSwipe: (prev, current, direction) {
                     _handleSwipe(docs[prev], direction);
                     return true;
@@ -135,7 +163,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
           ),
           _buildActionButtons(),
           // Padding to ensure we don't overlap the BottomNavigationBar
-          const SizedBox(height: 10), 
+          const SizedBox(height: 10),
         ],
       ),
     );
@@ -149,20 +177,20 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
         children: [
           const Icon(Icons.auto_awesome, color: habeshaGold, size: 28),
           const Text(
-            "HABESHA DATES", 
+            "HABESHA DATES",
             style: TextStyle(
-              color: habeshaGold, 
+              color: habeshaGold,
               fontFamily: 'Ethiopic', // If you have a custom font
-              fontWeight: FontWeight.bold, 
-              letterSpacing: 2, 
-              fontSize: 18, 
-              decoration: TextDecoration.none
-            )
+              fontWeight: FontWeight.bold,
+              letterSpacing: 2,
+              fontSize: 18,
+              decoration: TextDecoration.none,
+            ),
           ),
           IconButton(
-            icon: const Icon(Icons.tune, color: Colors.white, size: 28), 
+            icon: const Icon(Icons.tune, color: Colors.white, size: 28),
             // CHANGED: Use .go instead of .push to stay within the Shell
-            onPressed: () => context.go('/settings') 
+            onPressed: () => context.go('/settings'),
           ),
         ],
       ),
@@ -183,10 +211,16 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                   imageUrl: user['profileImageUrl'] ?? "",
                   fit: BoxFit.cover,
                   placeholder: (context, url) => Container(
-                    color: cardGrey, 
-                    child: const Center(child: CircularProgressIndicator(color: habeshaGold))
+                    color: cardGrey,
+                    child: const Center(
+                      child: CircularProgressIndicator(color: habeshaGold),
+                    ),
                   ),
-                  errorWidget: (context, url, error) => const Icon(Icons.person, size: 100, color: Colors.white10),
+                  errorWidget: (context, url, error) => const Icon(
+                    Icons.person,
+                    size: 100,
+                    color: Colors.white10,
+                  ),
                 ),
               ),
               Positioned.fill(
@@ -195,7 +229,10 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: [Colors.transparent, Colors.black.withOpacity(0.85)],
+                      colors: [
+                        Colors.transparent,
+                        Colors.black.withValues(alpha: 0.85),
+                      ],
                       stops: const [0.6, 1.0],
                     ),
                   ),
@@ -210,24 +247,28 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                     Text(
                       "${user['name'] ?? 'Anonymous'}, ${user['age'] ?? '??'}",
                       style: const TextStyle(
-                        color: Colors.white, 
-                        fontSize: 28, 
-                        fontWeight: FontWeight.bold, 
-                        decoration: TextDecoration.none
+                        color: Colors.white,
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        decoration: TextDecoration.none,
                       ),
                     ),
                     const SizedBox(height: 5),
                     Row(
                       children: [
-                        const Icon(Icons.location_on, color: habeshaGold, size: 16),
+                        const Icon(
+                          Icons.location_on,
+                          color: habeshaGold,
+                          size: 16,
+                        ),
                         const SizedBox(width: 5),
                         Text(
                           "${user['heritage'] ?? 'Habesha'} • ${user['religion'] ?? 'General'}",
                           style: const TextStyle(
-                            color: habeshaGold, 
-                            fontSize: 16, 
-                            fontWeight: FontWeight.w600, 
-                            decoration: TextDecoration.none
+                            color: habeshaGold,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            decoration: TextDecoration.none,
                           ),
                         ),
                       ],
@@ -250,16 +291,31 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
         children: [
           _actionBtn(Icons.replay, habeshaGold, _handleUndo, scale: 0.8),
           const SizedBox(width: 25),
-          _actionBtn(Icons.close, Colors.red, () => _swiperController.swipe(CardSwiperDirection.left)),
+          _actionBtn(
+            Icons.close,
+            Colors.red,
+            () => _swiperController.swipe(CardSwiperDirection.left),
+          ),
           const SizedBox(width: 25),
-          _actionBtn(Icons.favorite, Colors.green, () => _swiperController.swipe(CardSwiperDirection.right), scale: 1.2),
+          _actionBtn(
+            Icons.favorite,
+            Colors.green,
+            () => _swiperController.swipe(CardSwiperDirection.right),
+            scale: 1.2,
+          ),
         ],
       ),
     );
   }
 
-  Widget _actionBtn(IconData icon, Color color, VoidCallback onTap, {double scale = 1.0}) {
-    return Material( // Added Material here to handle the InkWell splash properly
+  Widget _actionBtn(
+    IconData icon,
+    Color color,
+    VoidCallback onTap, {
+    double scale = 1.0,
+  }) {
+    return Material(
+      // Added Material here to handle the InkWell splash properly
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
@@ -267,15 +323,15 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
         child: Container(
           padding: EdgeInsets.all(15 * scale),
           decoration: BoxDecoration(
-            shape: BoxShape.circle, 
-            color: cardGrey, 
+            shape: BoxShape.circle,
+            color: cardGrey,
             border: Border.all(color: Colors.white10, width: 2),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.3), 
-                blurRadius: 10, 
-                spreadRadius: 2
-              )
+                color: Colors.black.withValues(alpha: 0.3),
+                blurRadius: 10,
+                spreadRadius: 2,
+              ),
             ],
           ),
           child: Icon(icon, color: color, size: 30 * scale),
@@ -292,8 +348,12 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
           Icon(Icons.person_search, size: 80, color: Colors.white24),
           SizedBox(height: 20),
           Text(
-            "No more profiles nearby!", 
-            style: TextStyle(color: Colors.white70, fontSize: 18, decoration: TextDecoration.none)
+            "No more profiles nearby!",
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: 18,
+              decoration: TextDecoration.none,
+            ),
           ),
         ],
       ),

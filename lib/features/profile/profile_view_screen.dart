@@ -24,19 +24,26 @@ class ProfileViewScreen extends StatelessWidget {
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator(color: habeshaGold));
+            return const Center(
+              child: CircularProgressIndicator(color: habeshaGold),
+            );
           }
 
           if (!snapshot.hasData || !snapshot.data!.exists) {
             return const Center(
-              child: Text("Profile not found", style: TextStyle(color: Colors.white)),
+              child: Text(
+                "Profile not found",
+                style: TextStyle(color: Colors.white),
+              ),
             );
           }
 
           final userData = snapshot.data!.data() as Map<String, dynamic>;
           final String rawImageUrl = userData['profileImageUrl'] ?? "";
-          final String displayImageUrl = rawImageUrl.isNotEmpty ? "$rawImageUrl?tr=w-800" : "";
-          
+          final String displayImageUrl = rawImageUrl.isNotEmpty
+              ? "$rawImageUrl?tr=w-800"
+              : "";
+
           // Get the new detailed fields
           final bool isVerified = userData['isVerified'] ?? false;
           final String religion = userData['religion'] ?? "Add Religion";
@@ -60,12 +67,18 @@ class ProfileViewScreen extends StatelessWidget {
                           ? CachedNetworkImage(
                               imageUrl: displayImageUrl,
                               fit: BoxFit.cover,
-                              placeholder: (context, url) => Container(color: surfaceGrey),
-                              errorWidget: (context, url, error) => const Icon(Icons.person, size: 100),
+                              placeholder: (context, url) =>
+                                  Container(color: surfaceGrey),
+                              errorWidget: (context, url, error) =>
+                                  const Icon(Icons.person, size: 100),
                             )
                           : Container(
                               color: surfaceGrey,
-                              child: const Icon(Icons.person, size: 100, color: Colors.white10),
+                              child: const Icon(
+                                Icons.person,
+                                size: 100,
+                                color: Colors.white10,
+                              ),
                             ),
                       const DecoratedBox(
                         decoration: BoxDecoration(
@@ -84,7 +97,10 @@ class ProfileViewScreen extends StatelessWidget {
               // PROFILE CONTENT
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 10.0),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24.0,
+                    vertical: 10.0,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -108,17 +124,27 @@ class ProfileViewScreen extends StatelessWidget {
                                 Row(
                                   children: [
                                     Icon(
-                                      isVerified ? Icons.verified : Icons.gpp_maybe,
-                                      color: isVerified ? Colors.blue : Colors.white24,
+                                      isVerified
+                                          ? Icons.verified
+                                          : Icons.gpp_maybe,
+                                      color: isVerified
+                                          ? Colors.blue
+                                          : Colors.white24,
                                       size: 18,
                                     ),
                                     const SizedBox(width: 6),
                                     Text(
-                                      isVerified ? "Fayda Verified" : "Not Verified",
+                                      isVerified
+                                          ? "Fayda Verified"
+                                          : "Not Verified",
                                       style: TextStyle(
-                                        color: isVerified ? Colors.blue.shade300 : Colors.white24,
+                                        color: isVerified
+                                            ? Colors.blue.shade300
+                                            : Colors.white24,
                                         fontSize: 14,
-                                        fontWeight: isVerified ? FontWeight.bold : FontWeight.normal,
+                                        fontWeight: isVerified
+                                            ? FontWeight.bold
+                                            : FontWeight.normal,
                                       ),
                                     ),
                                   ],
@@ -126,10 +152,13 @@ class ProfileViewScreen extends StatelessWidget {
                               ],
                             ),
                           ),
-                          _buildActionCircle(Icons.edit, () => context.push('/profile_edit')),
+                          _buildActionCircle(
+                            Icons.edit,
+                            () => context.push('/profile_edit'),
+                          ),
                         ],
                       ),
-                      
+
                       const SizedBox(height: 25),
                       _buildSectionTitle("PROFESSION"),
                       _buildDetailRow(Icons.work_outline, jobTitle),
@@ -138,13 +167,17 @@ class ProfileViewScreen extends StatelessWidget {
                       _buildSectionTitle("ABOUT ME"),
                       Text(
                         userData['bio'] ?? "No bio added yet.",
-                        style: const TextStyle(color: Colors.white70, fontSize: 16, height: 1.5),
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 16,
+                          height: 1.5,
+                        ),
                       ),
 
                       const SizedBox(height: 30),
                       _buildSectionTitle("ESSENTIALS"),
                       const SizedBox(height: 12),
-                      
+
                       // DYNAMIC CHIP GRID
                       Wrap(
                         spacing: 10,
@@ -154,7 +187,10 @@ class ProfileViewScreen extends StatelessWidget {
                           _buildChip(Icons.church, religion),
                           _buildChip(Icons.school, education),
                           _buildChip(Icons.smoking_rooms, smoking),
-                          _buildChip(Icons.flag_outlined, userData['heritage'] ?? "Heritage"),
+                          _buildChip(
+                            Icons.flag_outlined,
+                            userData['heritage'] ?? "Heritage",
+                          ),
                         ],
                       ),
 
@@ -164,12 +200,23 @@ class ProfileViewScreen extends StatelessWidget {
                           children: [
                             const Text(
                               "Joined 2026",
-                              style: TextStyle(color: Colors.white24, fontSize: 12),
+                              style: TextStyle(
+                                color: Colors.white24,
+                                fontSize: 12,
+                              ),
                             ),
                             const SizedBox(height: 10),
                             TextButton(
-                              onPressed: () => FirebaseAuth.instance.signOut().then((_) => context.go('/')),
-                              child: const Text("Log Out", style: TextStyle(color: Colors.redAccent)),
+                              onPressed: () async {
+                                await FirebaseAuth.instance.signOut();
+                                if (context.mounted) {
+                                  context.go('/');
+                                }
+                              },
+                              child: const Text(
+                                "Log Out",
+                                style: TextStyle(color: Colors.redAccent),
+                              ),
                             ),
                           ],
                         ),
@@ -220,12 +267,20 @@ class ProfileViewScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: surfaceGrey,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: isPlaceholder ? Colors.white10 : habeshaGold.withOpacity(0.3)),
+        border: Border.all(
+          color: isPlaceholder
+              ? Colors.white10
+              : habeshaGold.withValues(alpha: 0.3),
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: isPlaceholder ? Colors.white24 : habeshaGold, size: 16),
+          Icon(
+            icon,
+            color: isPlaceholder ? Colors.white24 : habeshaGold,
+            size: 16,
+          ),
           const SizedBox(width: 8),
           Text(
             label,
@@ -246,8 +301,8 @@ class ProfileViewScreen extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: habeshaGold.withOpacity(0.1),
-          border: Border.all(color: habeshaGold.withOpacity(0.5)),
+          color: habeshaGold.withValues(alpha: 0.1),
+          border: Border.all(color: habeshaGold.withValues(alpha: 0.5)),
         ),
         child: Icon(icon, color: habeshaGold, size: 24),
       ),

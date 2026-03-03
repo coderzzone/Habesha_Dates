@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'firebase_options.dart'; 
+import 'firebase_options.dart';
 import 'core/navigation/app_router.dart';
 
 void main() async {
@@ -24,7 +24,9 @@ void main() async {
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+  const MyApp({super.key, this.enablePresenceUpdates = true});
+
+  final bool enablePresenceUpdates;
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -32,7 +34,6 @@ class MyApp extends StatefulWidget {
 
 // WidgetsBindingObserver allows us to listen to app lifecycle (background/foreground)
 class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
-  
   @override
   void initState() {
     super.initState();
@@ -59,14 +60,19 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   /// Updates the user's online status and last seen timestamp in Firestore
   void _updatePresence(bool isOnline) {
+    if (!widget.enablePresenceUpdates || Firebase.apps.isEmpty) return;
     final User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      FirebaseFirestore.instance.collection('users').doc(user.uid).update({
-        'isOnline': isOnline,
-        'lastSeen': FieldValue.serverTimestamp(),
-      }).catchError((e) {
-        debugPrint("Error updating presence: $e");
-      });
+      FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .update({
+            'isOnline': isOnline,
+            'lastSeen': FieldValue.serverTimestamp(),
+          })
+          .catchError((e) {
+            debugPrint("Error updating presence: $e");
+          });
     }
   }
 
@@ -77,7 +83,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: Brightness.dark,
-        primaryColor: const Color(0xFFD4AF35), 
+        primaryColor: const Color(0xFFD4AF35),
         scaffoldBackgroundColor: const Color(0xFF0A0A0A),
       ),
       routerConfig: AppRouter.router,

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:habesha_dates/features/verification/verification_screen.dart';
 
-
 // --- GLOBAL CONSTANTS ---
 const Color kGold = Color(0xFFD4AF35);
 const Color kEmerald = Color(0xFF064E3B);
@@ -72,9 +71,13 @@ class AiBreakdownScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _circleAvatar("https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e"),
+              _circleAvatar(
+                "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e",
+              ),
               const SizedBox(width: 40),
-              _circleAvatar("https://images.unsplash.com/photo-1506794778202-cad84cf45f1d"),
+              _circleAvatar(
+                "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d",
+              ),
             ],
           ),
           Container(
@@ -85,17 +88,35 @@ class AiBreakdownScreen extends StatelessWidget {
               shape: BoxShape.circle,
               border: Border.all(color: kGold, width: 2),
               boxShadow: [
-                BoxShadow(color: kGold.withOpacity(0.4), blurRadius: 15, spreadRadius: 2)
+                BoxShadow(
+                  color: kGold.withValues(alpha: 0.4),
+                  blurRadius: 15,
+                  spreadRadius: 2,
+                ),
               ],
             ),
             child: const Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text("94%", style: TextStyle(color: kGold, fontSize: 18, fontWeight: FontWeight.bold)),
-                Text("MATCH", style: TextStyle(color: Color(0x99D4AF35), fontSize: 8, fontWeight: FontWeight.bold)),
+                Text(
+                  "94%",
+                  style: TextStyle(
+                    color: kGold,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  "MATCH",
+                  style: TextStyle(
+                    color: Color(0x99D4AF35),
+                    fontSize: 8,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ],
             ),
-          )
+          ),
         ],
       ),
     );
@@ -118,14 +139,20 @@ class AiBreakdownScreen extends StatelessWidget {
       children: [
         const Text(
           "Dawit M. 🎖️",
-          style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white),
+          style: TextStyle(
+            fontSize: 26,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
         ),
         const SizedBox(height: 6),
         GestureDetector(
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => VerificationScreen()), // Remove const
+              MaterialPageRoute(
+                builder: (context) => VerificationScreen(),
+              ), // Remove const
             );
           },
           child: Container(
@@ -160,9 +187,9 @@ class AiBreakdownScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: kGold.withOpacity(0.05),
+        color: kGold.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: kGold.withOpacity(0.2)),
+        border: Border.all(color: kGold.withValues(alpha: 0.2)),
       ),
       child: const Column(
         children: [
@@ -172,7 +199,12 @@ class AiBreakdownScreen extends StatelessWidget {
               SizedBox(width: 8),
               Text(
                 "AI COMPATIBILITY INSIGHT",
-                style: TextStyle(color: kGold, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1),
+                style: TextStyle(
+                  color: kGold,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1,
+                ),
               ),
             ],
           ),
@@ -185,7 +217,7 @@ class AiBreakdownScreen extends StatelessWidget {
               fontStyle: FontStyle.italic,
               height: 1.5,
             ),
-          )
+          ),
         ],
       ),
     );
@@ -204,7 +236,7 @@ class AiBreakdownScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: kCardDark,
         borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -215,9 +247,23 @@ class AiBreakdownScreen extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title.toUpperCase(), style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.bold)),
+                  Text(
+                    title.toUpperCase(),
+                    style: TextStyle(
+                      color: color,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   const SizedBox(height: 4),
-                  Text(percent, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text(
+                    percent,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ],
               ),
               Icon(icon, color: color, size: 24),
@@ -228,20 +274,34 @@ class AiBreakdownScreen extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(labels[i], style: const TextStyle(color: Colors.white38, fontSize: 11, fontWeight: FontWeight.bold)),
-                Text("${(values[i] * 100).toInt()}%", style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.bold)),
+                Text(
+                  labels[i],
+                  style: const TextStyle(
+                    color: Colors.white38,
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  "${(values[i] * 100).toInt()}%",
+                  style: TextStyle(
+                    color: color,
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 6),
             LinearProgressIndicator(
               value: values[i],
               color: color,
-              backgroundColor: Colors.white.withOpacity(0.05),
+              backgroundColor: Colors.white.withValues(alpha: 0.05),
               minHeight: 6,
               borderRadius: BorderRadius.circular(10),
             ),
             const SizedBox(height: 16),
-          ]
+          ],
         ],
       ),
     );
@@ -260,7 +320,7 @@ class AiBreakdownScreen extends StatelessWidget {
           Expanded(
             child: _btn(
               label: "Pass",
-              bg: Colors.white.withOpacity(0.05),
+              bg: Colors.white.withValues(alpha: 0.05),
               textCol: Colors.white70,
               icon: Icons.close,
             ),
@@ -280,14 +340,24 @@ class AiBreakdownScreen extends StatelessWidget {
     );
   }
 
-  Widget _btn({required String label, required Color bg, required Color textCol, required IconData icon}) {
+  Widget _btn({
+    required String label,
+    required Color bg,
+    required Color textCol,
+    required IconData icon,
+  }) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
-          if (bg == kGold) BoxShadow(color: kGold.withOpacity(0.2), blurRadius: 10, spreadRadius: 1)
+          if (bg == kGold)
+            BoxShadow(
+              color: kGold.withValues(alpha: 0.2),
+              blurRadius: 10,
+              spreadRadius: 1,
+            ),
         ],
       ),
       child: Row(
@@ -297,7 +367,11 @@ class AiBreakdownScreen extends StatelessWidget {
           const SizedBox(width: 8),
           Text(
             label,
-            style: TextStyle(color: textCol, fontWeight: FontWeight.bold, fontSize: 15),
+            style: TextStyle(
+              color: textCol,
+              fontWeight: FontWeight.bold,
+              fontSize: 15,
+            ),
           ),
         ],
       ),
