@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'widgets/match_overlay.dart';
+import 'ai_intent_match_screen.dart';
 
 class DiscoveryScreen extends StatefulWidget {
   const DiscoveryScreen({super.key});
@@ -137,6 +138,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
 
                 final docs = snapshot.data!.docs
                     .where((d) => d.id != currentUserId)
+                    .take(5)
                     .toList();
                 if (docs.isEmpty) return _buildEmptyState();
 
@@ -175,7 +177,10 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Icon(Icons.auto_awesome, color: habeshaGold, size: 28),
+          IconButton(
+            onPressed: _openAiMatcher,
+            icon: const Icon(Icons.auto_awesome, color: habeshaGold, size: 28),
+          ),
           const Text(
             "HABESHA DATES",
             style: TextStyle(
@@ -195,6 +200,12 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _openAiMatcher() async {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const AiIntentMatchScreen()));
   }
 
   Widget _buildUserCard(Map<String, dynamic> user, String id) {

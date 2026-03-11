@@ -24,6 +24,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
 
   String? selectedReligion;
   String? selectedHeritage;
+  String? selectedIntent;
   File? _imageFile;
   bool isLoading = false;
 
@@ -43,6 +44,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     'Hawassa',
     'Diaspora',
   ];
+  final List<String> intents = ['Marriage', 'Long-term', 'Friendship'];
 
   @override
   void dispose() {
@@ -98,6 +100,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
         'bio': bioController.text.trim(),
         'religion': selectedReligion,
         'heritage': selectedHeritage,
+        'intent': selectedIntent ?? 'Long-term',
         'profileImageUrl': downloadUrl,
         'phoneNumber': user.phoneNumber,
         'createdAt': FieldValue.serverTimestamp(),
@@ -167,6 +170,13 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
               heritages,
               selectedHeritage,
               (val) => setState(() => selectedHeritage = val),
+            ),
+            const SizedBox(height: 15),
+            _buildDropdown(
+              "Intent",
+              intents,
+              selectedIntent,
+              (val) => setState(() => selectedIntent = val),
             ),
             const SizedBox(height: 15),
             _buildTextField(bioController, "Bio", Icons.book, maxLines: 3),

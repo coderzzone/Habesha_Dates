@@ -55,7 +55,7 @@ class _IdCaptureScreenState extends State<IdCaptureScreen> {
         children: [
           // 1. Live Camera Preview
           if (_isInitialized)
-            Positioned.fill(child: CameraPreview(_controller!))
+            Positioned.fill(child: _buildCameraPreview())
           else
             const Center(child: CircularProgressIndicator(color: gold)),
 
@@ -132,6 +132,16 @@ class _IdCaptureScreenState extends State<IdCaptureScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildCameraPreview() {
+    final size = MediaQuery.of(context).size;
+    final deviceRatio = size.width / size.height;
+    final cameraRatio = _controller!.value.aspectRatio;
+    return Transform.scale(
+      scale: cameraRatio / deviceRatio,
+      child: Center(child: CameraPreview(_controller!)),
     );
   }
 

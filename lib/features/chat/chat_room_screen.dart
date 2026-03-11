@@ -43,6 +43,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
 
   void _sendMessage() async {
     if (_messageController.text.trim().isEmpty) return;
+
     final text = _messageController.text.trim();
     _messageController.clear();
     _setTypingStatus(false);
@@ -67,6 +68,12 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
           'isRead': false,
           'timestamp': FieldValue.serverTimestamp(),
         });
+  }
+
+  @override
+  void dispose() {
+    _messageController.dispose();
+    super.dispose();
   }
 
   @override

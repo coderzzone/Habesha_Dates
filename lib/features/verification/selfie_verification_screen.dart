@@ -55,7 +55,7 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
       body: Stack(
         children: [
           if (_isInitialized)
-            Positioned.fill(child: CameraPreview(_controller!))
+            Positioned.fill(child: _buildCameraPreview())
           else
             const Center(child: CircularProgressIndicator(color: gold)),
 
@@ -119,6 +119,16 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildCameraPreview() {
+    final size = MediaQuery.of(context).size;
+    final deviceRatio = size.width / size.height;
+    final cameraRatio = _controller!.value.aspectRatio;
+    return Transform.scale(
+      scale: cameraRatio / deviceRatio,
+      child: Center(child: CameraPreview(_controller!)),
     );
   }
 }
