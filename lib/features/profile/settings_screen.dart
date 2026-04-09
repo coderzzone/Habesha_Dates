@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/theme/app_theme.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -11,13 +12,9 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  static const Color habeshaGold = Color(0xFFD4AF35);
-  static const Color backgroundDark = Color(0xFF0A0A0A);
-
   final User? currentUser = FirebaseAuth.instance.currentUser;
   late final String uid;
 
-  // Local state to handle smooth slider movement without waiting for DB round-trip
   double? _distance;
   RangeValues? _ageRange;
   bool? _notifications;
@@ -28,36 +25,43 @@ class _SettingsScreenState extends State<SettingsScreen> {
     uid = currentUser?.uid ?? "";
   }
 
+  Future<void> _sendEmailVerification() async {
+    try {
+      await currentUser?.sendEmailVerification();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Verification email sent! Please check your inbox.")),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to send: $e"), backgroundColor: AppColors.error),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (currentUser == null) return const Scaffold(body: Center(child: Text("Not logged in")));
+
     return Scaffold(
-      backgroundColor: backgroundDark,
+      backgroundColor: AppColors.darkBg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: const Text(
-          "Settings",
-          style: TextStyle(color: habeshaGold, fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
         elevation: 0,
+        title: Text("Settings", style: Theme.of(context).appBarTheme.titleTextStyle),
+        centerTitle: true,
       ),
       body: StreamBuilder<DocumentSnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('users')
-            .doc(uid)
-            .snapshots(),
+        stream: FirebaseFirestore.instance.collection('users').doc(uid).snapshots(),
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting &&
-              _distance == null) {
-            return const Center(
-              child: CircularProgressIndicator(color: habeshaGold),
-            );
+          if (snapshot.connectionState == ConnectionState.waiting && _distance == null) {
+            return const Center(child: CircularProgressIndicator(color: AppColors.gold));
           }
 
           if (snapshot.hasData && snapshot.data!.exists) {
             var data = snapshot.data!.data() as Map<String, dynamic>;
 
-            // Only update local state if it hasn't been touched yet (to avoid slider jumping)
             _distance ??= (data['maxDistance'] ?? 50).toDouble();
             _ageRange ??= RangeValues(
               (data['minAge'] ?? 18).toDouble(),
@@ -68,239 +72,230 @@ class _SettingsScreenState extends State<SettingsScreen> {
             final bool isVerified = data['isVerified'] ?? false;
 
             return ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               children: [
-                const SizedBox(height: 20),
-                _buildSectionTitle("ACCOUNT SETTINGS"),
-                _buildListTile(
-                  Icons.person,
-                  "Profile Information",
-                  onTap: () => context.push('/profile_edit'),
-                ),
-                _buildListTile(
-                  Icons.email,
-                  "Email",
-                  subtitle: currentUser?.email ?? "Not set",
-                ),
+                _buildSection("Discovery Preferences", [
+                  _buildSliderTile("Maximum Distance", "${_distance!.round()} km", _distance!, 1, 100, 
+                    (val) => setState(() => _distance = val), (val) => _save('maxDistance', val.round())),
+                  const Divider(color: Colors.white10),
+                  _buildRangeSliderTile("Age Range", "${_ageRange!.start.round()} - ${_ageRange!.end.round()}", _ageRange!, 18, 70, 
+                    (val) => setState(() => _ageRange = val), (val) => _saveMulti({'minAge': val.start.round(), 'maxAge': val.end.round()})),
+                ]),
 
-                const SizedBox(height: 30),
-                _buildSectionTitle("DISCOVERY PREFERENCES"),
+                const SizedBox(height: 25),
+                _buildSection("Account & Security", [
+                  _buildListTile(Icons.person_outline, "Edit Profile", subtitle: "Update photos and bio", 
+                    onTap: () => context.push('/profile_edit')),
+                  const Divider(color: Colors.white10),
+                  _buildSecurityTile(isVerified),
+                  const Divider(color: Colors.white10),
+                  _buildEmailTile(),
+                ]),
 
-                _buildSliderHeader(
-                  "Maximum Distance",
-                  "${_distance!.round()} km",
-                ),
-                Slider(
-                  value: _distance!,
-                  min: 1,
-                  max: 100,
-                  activeColor: Colors.green[800],
-                  inactiveColor: Colors.white10,
-                  onChanged: (val) => setState(() => _distance = val),
-                  onChangeEnd: (val) => _save('maxDistance', val.round()),
-                ),
+                const SizedBox(height: 25),
+                _buildSection("Premium & Payments", [
+                  _buildListTile(Icons.workspace_premium_outlined, "Premium Features",
+                    subtitle: "Explore Gold membership benefits",
+                    onTap: () => context.push('/premium')),
+                  const Divider(color: Colors.white10),
+                  _buildListTile(Icons.lock_outline, "Upgrade Now",
+                    subtitle: "Open paywall options",
+                    onTap: () => context.push('/paywall')),
+                  const Divider(color: Colors.white10),
+                  _buildListTile(Icons.receipt_long_outlined, "Pay with Telebirr",
+                    subtitle: "Manual screenshot upload",
+                    onTap: () => context.push('/telebirr?amount=600')),
+                ]),
 
-                _buildSliderHeader(
-                  "Age Range",
-                  "${_ageRange!.start.round()} - ${_ageRange!.end.round()}",
-                ),
-                RangeSlider(
-                  values: _ageRange!,
-                  min: 18,
-                  max: 70,
-                  activeColor: habeshaGold,
-                  inactiveColor: Colors.white10,
-                  onChanged: (val) => setState(() => _ageRange = val),
-                  onChangeEnd: (val) => _saveMulti({
-                    'minAge': val.start.round(),
-                    'maxAge': val.end.round(),
-                  }),
-                ),
-
-                const SizedBox(height: 30),
-                _buildSectionTitle("SECURITY"),
-                _buildSecurityTile(isVerified),
-
-                const SizedBox(height: 30),
-                _buildSectionTitle("APP PREFERENCES"),
-                SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  secondary: const Icon(
-                    Icons.notifications,
-                    color: Colors.white54,
+                const SizedBox(height: 25),
+                _buildSection("App Settings", [
+                  _buildListTile(Icons.notifications_active_outlined, "Notifications Inbox",
+                    subtitle: "See follows, matches, and chats",
+                    onTap: () => context.push('/notifications')),
+                  const Divider(color: Colors.white10),
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    secondary: const Icon(Icons.notifications_none_outlined, color: Colors.white70),
+                    title: const Text("Push Notifications", style: TextStyle(color: Colors.white, fontSize: 16)),
+                    value: _notifications!,
+                    activeThumbColor: AppColors.gold,
+                    onChanged: (val) {
+                      setState(() => _notifications = val);
+                      _save('notificationsEnabled', val);
+                    },
                   ),
-                  title: const Text(
-                    "Push Notifications",
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  value: _notifications!,
-                  activeThumbColor: Colors.white,
-                  activeTrackColor: Colors.green[800],
-                  onChanged: (val) {
-                    setState(() => _notifications = val);
-                    _save('notificationsEnabled', val);
-                  },
-                ),
+                ]),
 
                 const SizedBox(height: 50),
                 _buildLogoutButton(),
-                const SizedBox(height: 20),
-                Center(
-                  child: Text(
-                    "Version 1.0.6 (2026)",
-                    style: const TextStyle(color: Colors.white24, fontSize: 12),
-                  ),
-                ),
                 const SizedBox(height: 40),
               ],
             );
           }
-          return const Center(
-            child: Text(
-              "Error loading settings",
-              style: TextStyle(color: Colors.white),
-            ),
-          );
+          return const Center(child: Text("Error loading settings"));
         },
       ),
     );
   }
 
-  // --- DATABASE HELPERS ---
+  Future<void> _showEmailDialog() async {
+    final TextEditingController emailController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        title: const Text("Update Email", style: TextStyle(color: Colors.white)),
+        content: TextField(
+          controller: emailController,
+          style: const TextStyle(color: Colors.white),
+          decoration: const InputDecoration(
+            hintText: "Enter your email address",
+            hintStyle: TextStyle(color: Colors.white30),
+            enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white10)),
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("CANCEL", style: TextStyle(color: Colors.white54))),
+          TextButton(
+            onPressed: () async {
+              try {
+                final email = emailController.text.trim();
+                if (email.isEmpty) return;
+                
+                // Use verifyBeforeUpdateEmail for modern security
+                await currentUser?.verifyBeforeUpdateEmail(email);
+
+                if (!mounted) return;
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Email updated and verification sent!")),
+                );
+                setState(() {}); // Refresh UI
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Error: $e"), backgroundColor: AppColors.error),
+                  );
+                }
+              }
+            },
+            child: const Text("UPDATE & VERIFY", style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmailTile() {
+    final String? email = currentUser?.email;
+    final bool hasEmail = email != null && email.isNotEmpty;
+    final bool isEmailVerified = currentUser?.emailVerified ?? false;
+
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: const Icon(Icons.email_outlined, color: Colors.white70, size: 22),
+      title: const Text("Email Address", style: TextStyle(color: Colors.white, fontSize: 16)),
+      subtitle: Row(
+        children: [
+          Text(hasEmail ? (email ?? "") : "Not set", style: const TextStyle(color: Colors.white38, fontSize: 12)),
+          const SizedBox(width: 8),
+          if (hasEmail && isEmailVerified)
+            const Icon(Icons.verified, color: Colors.blue, size: 14)
+          else if (hasEmail)
+            const Text(" (Unverified)", style: TextStyle(color: Colors.redAccent, fontSize: 12)),
+        ],
+      ),
+      trailing: isEmailVerified 
+          ? null 
+          : TextButton(
+              onPressed: hasEmail ? _sendEmailVerification : _showEmailDialog,
+              child: Text(hasEmail ? "VERIFY" : "ADD EMAIL", 
+                style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold, fontSize: 12)),
+            ),
+    );
+  }
 
   void _save(String key, dynamic value) {
-    FirebaseFirestore.instance.collection('users').doc(uid).update({
-      key: value,
-    });
+    FirebaseFirestore.instance.collection('users').doc(uid).update({key: value});
   }
 
   void _saveMulti(Map<String, dynamic> data) {
     FirebaseFirestore.instance.collection('users').doc(uid).update(data);
   }
 
-  // --- UI COMPONENTS ---
-
-  Widget _buildSectionTitle(String text) => Padding(
-    padding: const EdgeInsets.only(bottom: 10),
-    child: Text(
-      text,
-      style: const TextStyle(
-        color: Colors.white54,
-        fontSize: 11,
-        fontWeight: FontWeight.bold,
-        letterSpacing: 1.1,
-      ),
-    ),
-  );
-
-  Widget _buildSliderHeader(String title, String value) => Row(
-    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-    children: [
-      Text(title, style: const TextStyle(color: Colors.white, fontSize: 16)),
-      Text(
-        value,
-        style: const TextStyle(color: habeshaGold, fontWeight: FontWeight.bold),
-      ),
-    ],
-  );
-
-  Widget _buildListTile(
-    IconData icon,
-    String title, {
-    String? subtitle,
-    VoidCallback? onTap,
-  }) => ListTile(
-    onTap: onTap,
-    contentPadding: EdgeInsets.zero,
-    leading: Icon(icon, color: Colors.white54),
-    title: Text(title, style: const TextStyle(color: Colors.white)),
-    trailing: Row(
-      mainAxisSize: MainAxisSize.min,
+  Widget _buildSection(String title, List<Widget> children) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (subtitle != null)
-          Text(
-            subtitle,
-            style: const TextStyle(color: Colors.white38, fontSize: 12),
-          ),
-        const Icon(Icons.chevron_right, color: Colors.white24),
+        Padding(
+          padding: const EdgeInsets.only(left: 8, bottom: 8),
+          child: Text(title.toUpperCase(), style: const TextStyle(color: AppColors.gold, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
+        ),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(20), border: Border.all(color: Colors.white10)),
+          child: Column(children: children),
+        ),
       ],
-    ),
-  );
-
-  Widget _buildSecurityTile(bool isVerified) {
-    return InkWell(
-      onTap: isVerified ? null : () => context.push('/verification'),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1A1A1A),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              isVerified ? Icons.verified_user : Icons.gpp_maybe,
-              color: isVerified ? Colors.green : habeshaGold,
-            ),
-            const SizedBox(width: 15),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    "Fayda ID Integration",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(
-                    isVerified
-                        ? "Identity verified successfully"
-                        : "Verification required for trust",
-                    style: TextStyle(
-                      color: isVerified ? Colors.green : Colors.white54,
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (!isVerified)
-              const Icon(
-                Icons.arrow_forward_ios,
-                color: Colors.white24,
-                size: 14,
-              )
-            else
-              const Icon(Icons.check_circle, color: Colors.green),
-          ],
-        ),
-      ),
     );
   }
 
-  Widget _buildLogoutButton() => SizedBox(
-    width: double.infinity,
-    child: ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFF1A1A1A),
-        padding: const EdgeInsets.all(15),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-      onPressed: () async {
-        await FirebaseAuth.instance.signOut();
-        if (!mounted) return;
-        context.go('/');
-      },
-      child: const Text(
-        "Log Out",
-        style: TextStyle(
-          color: Colors.redAccent,
-          fontWeight: FontWeight.bold,
-          fontSize: 16,
+  Widget _buildSliderTile(String title, String value, double current, double min, double max, Function(double) onChanged, Function(double) onChangeEnd) {
+    return Column(children: [
+      Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+        Text(title, style: const TextStyle(color: Colors.white, fontSize: 16)),
+        Text(value, style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+      ]),
+      Slider(value: current, min: min, max: max, activeColor: AppColors.gold, inactiveColor: Colors.white10, onChanged: onChanged, onChangeEnd: onChangeEnd),
+    ]);
+  }
+
+  Widget _buildRangeSliderTile(String title, String value, RangeValues current, double min, double max, Function(RangeValues) onChanged, Function(RangeValues) onChangeEnd) {
+    return Column(children: [
+      Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+        Text(title, style: const TextStyle(color: Colors.white, fontSize: 16)),
+        Text(value, style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+      ]),
+      RangeSlider(values: current, min: min, max: max, activeColor: AppColors.gold, inactiveColor: Colors.white10, onChanged: onChanged, onChangeEnd: onChangeEnd),
+    ]);
+  }
+
+  Widget _buildListTile(IconData icon, String title, {String? subtitle, VoidCallback? onTap}) {
+    return ListTile(onTap: onTap, contentPadding: EdgeInsets.zero, leading: Icon(icon, color: Colors.white70, size: 22), title: Text(title, style: const TextStyle(color: Colors.white, fontSize: 16)), subtitle: subtitle != null ? Text(subtitle, style: const TextStyle(color: Colors.white38, fontSize: 12)) : null, trailing: const Icon(Icons.chevron_right, color: Colors.white24, size: 20));
+  }
+
+  Widget _buildSecurityTile(bool isVerified) {
+    return ListTile(
+      onTap: isVerified ? null : () => context.push('/verification'),
+      contentPadding: EdgeInsets.zero,
+      leading: Icon(isVerified ? Icons.verified : Icons.gpp_maybe_outlined, color: isVerified ? Colors.blue : AppColors.gold, size: 22),
+      title: const Text("Identity Verification", style: TextStyle(color: Colors.white, fontSize: 16)),
+      subtitle: Text(isVerified ? "ID Verified" : "Action required", style: TextStyle(color: isVerified ? Colors.blue : Colors.white38, fontSize: 12)),
+      trailing: isVerified ? const Icon(Icons.check_circle, color: Colors.blue, size: 20) : const Icon(Icons.chevron_right, color: Colors.white24, size: 20),
+    );
+  }
+
+  Widget _buildLogoutButton() {
+    return SizedBox(
+      width: double.infinity,
+      height: 55,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.red.withValues(alpha: 0.1),
+          foregroundColor: Colors.redAccent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+            side: const BorderSide(color: Colors.redAccent, width: 0.5),
+          ),
+          elevation: 0,
         ),
+        onPressed: () async {
+          await FirebaseAuth.instance.signOut();
+          if (!mounted) return;
+          context.go('/');
+        },
+        child: const Text("Log Out", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
       ),
-    ),
-  );
+    );
+  }
 }

@@ -4,17 +4,16 @@ import 'verification_success_screen.dart';
 
 class SelfieVerificationScreen extends StatefulWidget {
   const SelfieVerificationScreen({required this.idImagePath, super.key});
-
   final String idImagePath;
 
   @override
-  State<SelfieVerificationScreen> createState() =>
-      _SelfieVerificationScreenState();
+  State<SelfieVerificationScreen> createState() => _SelfieVerificationScreenState();
 }
 
 class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
   CameraController? _controller;
   bool _isInitialized = false;
+  bool _isCapturing = false;
 
   @override
   void initState() {
@@ -24,18 +23,9 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
 
   Future<void> _initializeCamera() async {
     final cameras = await availableCameras();
-    // Use FRONT camera for selfie
-    final frontCamera = cameras.firstWhere(
-      (c) => c.lensDirection == CameraLensDirection.front,
-    );
-
-    _controller = CameraController(
-      frontCamera,
-      ResolutionPreset.high,
-      enableAudio: false,
-    );
+    final frontCamera = cameras.firstWhere((c) => c.lensDirection == CameraLensDirection.front);
+    _controller = CameraController(frontCamera, ResolutionPreset.high, enableAudio: false);
     await _controller!.initialize();
-
     if (!mounted) return;
     setState(() => _isInitialized = true);
   }
@@ -49,56 +39,38 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
   @override
   Widget build(BuildContext context) {
     const Color gold = Color(0xFFD4AF35);
-
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          if (_isInitialized)
-            Positioned.fill(child: _buildCameraPreview())
-          else
-            const Center(child: CircularProgressIndicator(color: gold)),
+          if (_isInitialized) SizedBox.expand(child: CameraPreview(_controller!))
+          else const Center(child: CircularProgressIndicator(color: gold)),
 
-          // Circular Overlay for Selfie
+          // CIRCULAR OVERLAY
           Center(
             child: Container(
-              width: 280,
-              height: 280,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: gold, width: 4),
-              ),
+              width: 280, height: 280,
+              decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: gold, width: 4)),
             ),
           ),
 
           SafeArea(
             child: Column(
               children: [
-                const Padding(
-                  padding: EdgeInsets.all(20),
-                  child: Text(
-                    "SELFIE VERIFICATION",
-                    style: TextStyle(color: gold, fontWeight: FontWeight.bold),
-                  ),
-                ),
+                const SizedBox(height: 20),
+                const Text("SELFIE VERIFICATION", style: TextStyle(color: gold, fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: 1.5)),
                 const Spacer(),
-                const Text(
-                  "Position your face in the circle",
-                  style: TextStyle(color: Colors.white),
-                ),
+                const Text("Position your face in the circle", style: TextStyle(color: Colors.white, fontSize: 16)),
                 const SizedBox(height: 30),
-                IconButton(
-                  icon: const Icon(Icons.camera, color: Colors.white, size: 70),
-                  onPressed: () async {
-                    if (_controller == null ||
-                        !_controller!.value.isInitialized) {
-                      return;
-                    }
+                GestureDetector(
+                  onTap: () async {
+                    if (_controller == null || !_controller!.value.isInitialized || _isCapturing) return;
+
+                    setState(() => _isCapturing = true);
 
                     try {
                       final selfieImage = await _controller!.takePicture();
-                      if (!context.mounted) return;
-
+                      if (!mounted) return;
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -109,26 +81,23 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
                         ),
                       );
                     } catch (e) {
-                      debugPrint("Error capturing selfie: $e");
+                      debugPrint("Capture error: $e");
+                      if (mounted) setState(() => _isCapturing = false);
                     }
                   },
+                  child: Container(
+                    padding: const EdgeInsets.all(5),
+                    decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.white, width: 4)),
+                    child: const Icon(Icons.camera_alt, color: Colors.white, size: 60),
+                  ),
                 ),
                 const SizedBox(height: 40),
               ],
             ),
           ),
+          Positioned(top: 50, left: 20, child: IconButton(icon: const Icon(Icons.close, color: Colors.white, size: 30), onPressed: () => Navigator.pop(context))),
         ],
       ),
-    );
-  }
-
-  Widget _buildCameraPreview() {
-    final size = MediaQuery.of(context).size;
-    final deviceRatio = size.width / size.height;
-    final cameraRatio = _controller!.value.aspectRatio;
-    return Transform.scale(
-      scale: cameraRatio / deviceRatio,
-      child: Center(child: CameraPreview(_controller!)),
     );
   }
 }

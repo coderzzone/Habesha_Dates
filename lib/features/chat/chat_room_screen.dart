@@ -53,21 +53,33 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
         .doc(widget.chatId)
         .collection('messages')
         .add({
-          'senderId': currentUserId,
-          'text': text,
-          'timestamp': FieldValue.serverTimestamp(),
-          'isRead': false,
-        });
+      'senderId': currentUserId,
+      'text': text,
+      'timestamp': FieldValue.serverTimestamp(),
+      'isRead': false,
+    });
 
     await FirebaseFirestore.instance
         .collection('chats')
         .doc(widget.chatId)
         .update({
-          'lastMessage': text,
-          'lastSenderId': currentUserId,
-          'isRead': false,
-          'timestamp': FieldValue.serverTimestamp(),
-        });
+      'lastMessage': text,
+      'lastSenderId': currentUserId,
+      'isRead': false,
+      'timestamp': FieldValue.serverTimestamp(),
+    });
+
+    final partnerId = await _resolvePartnerId();
+    if (partnerId != null) {
+      await _notifyUser(
+        toUserId: partnerId,
+        type: 'chat',
+        data: {
+          'chatId': widget.chatId,
+          'message': text,
+        },
+      );
+    }
   }
 
   @override
@@ -80,7 +92,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
-      resizeToAvoidBottomInset: true, // Prevents overflow when keyboard opens
+      resizeToAvoidBottomInset: true,
       appBar: _buildAppBar(),
       body: Column(
         children: [
@@ -119,13 +131,11 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
               String status = "Offline";
               if (userSnap.hasData && userSnap.data!.exists) {
                 final data = userSnap.data!.data() as Map<String, dynamic>;
-                // DEFENSIVE CHECK: Use containsKey or null-aware operators to prevent "Bad state"
                 bool online = data['isOnline'] ?? false;
                 if (online) {
                   status = "Online";
                 } else if (data['lastSeen'] != null) {
-                  status =
-                      "Last seen ${DateFormat.jm().format((data['lastSeen'] as Timestamp).toDate())}";
+                  status = _formatLastSeen(data['lastSeen']);
                 }
               }
               return Column(
@@ -157,12 +167,28 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
           .orderBy('timestamp', descending: true)
           .snapshots(),
       builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return const Center(
+            child: Text(
+              "Unable to load messages.",
+              style: TextStyle(color: Colors.white54),
+            ),
+          );
+        }
         if (!snapshot.hasData) {
           return const Center(
             child: CircularProgressIndicator(color: habeshaGold),
           );
         }
         final messages = snapshot.data!.docs;
+        if (messages.isEmpty) {
+          return const Center(
+            child: Text(
+              "No messages yet. Say hello!",
+              style: TextStyle(color: Colors.white54),
+            ),
+          );
+        }
         return ListView.builder(
           reverse: true,
           padding: const EdgeInsets.all(15),
@@ -181,27 +207,53 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     return Align(
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: Column(
-        crossAxisAlignment: isMe
-            ? CrossAxisAlignment.end
-            : CrossAxisAlignment.start,
+        crossAxisAlignment:
+            isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
           Container(
             margin: const EdgeInsets.symmetric(vertical: 4),
             padding: const EdgeInsets.all(12),
+            constraints: BoxConstraints(
+              maxWidth: MediaQuery.of(context).size.width * 0.75,
+            ),
             decoration: BoxDecoration(
               color: isMe ? habeshaGold : const Color(0xFF1A1A1A),
-              borderRadius: BorderRadius.circular(15),
+              borderRadius: BorderRadius.only(
+                topLeft: const Radius.circular(15),
+                topRight: const Radius.circular(15),
+                bottomLeft: Radius.circular(isMe ? 15 : 0),
+                bottomRight: Radius.circular(isMe ? 0 : 15),
+              ),
             ),
-            child: Text(
-              msg['text'] ?? "",
-              style: TextStyle(color: isMe ? Colors.black : Colors.white),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  msg['text'] ?? "",
+                  style: TextStyle(
+                    color: isMe ? Colors.black : Colors.white,
+                    fontSize: 15,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _formatMsgTime(msg['timestamp']),
+                  style: TextStyle(
+                    color: isMe ? Colors.black45 : Colors.white24,
+                    fontSize: 9,
+                  ),
+                ),
+              ],
             ),
           ),
           if (isMe)
-            Icon(
-              Icons.done_all,
-              size: 12,
-              color: (msg['isRead'] ?? false) ? Colors.blue : Colors.white38,
+            Padding(
+              padding: const EdgeInsets.only(right: 4),
+              child: Icon(
+                Icons.done_all,
+                size: 12,
+                color: (msg['isRead'] ?? false) ? Colors.blue : Colors.white38,
+              ),
             ),
         ],
       ),
@@ -286,5 +338,62 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
         ],
       ),
     );
+  }
+
+  Future<String?> _resolvePartnerId() async {
+    try {
+      final chatDoc = await FirebaseFirestore.instance.collection('chats').doc(widget.chatId).get();
+      if (!chatDoc.exists) return null;
+      final data = chatDoc.data() as Map<String, dynamic>;
+      final List users = data['users'] ?? [];
+      return users.firstWhere((id) => id != currentUserId, orElse: () => null);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> _notifyUser({
+    required String toUserId,
+    required String type,
+    required Map<String, dynamic> data,
+  }) async {
+    if (currentUserId.isEmpty || toUserId.isEmpty) return;
+    try {
+      final userDoc = await FirebaseFirestore.instance.collection('users').doc(toUserId).get();
+      final userData = userDoc.data() ?? {};
+      if (userData['notificationsEnabled'] == false) return;
+
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(toUserId)
+          .collection('notifications')
+          .add({
+        'to': toUserId,
+        'from': currentUserId,
+        'type': type,
+        'data': data,
+        'isRead': false,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      debugPrint("Notification error: $e");
+    }
+  }
+
+  String _formatMsgTime(dynamic ts) {
+    if (ts == null) return "...";
+    return DateFormat.jm().format((ts as Timestamp).toDate());
+  }
+
+  String _formatLastSeen(dynamic ts) {
+    if (ts == null) return "Offline";
+    DateTime date = (ts as Timestamp).toDate();
+    DateTime now = DateTime.now();
+    Duration diff = now.difference(date);
+
+    if (diff.inMinutes < 1) return "Last seen just now";
+    if (diff.inMinutes < 60) return "Last seen ${diff.inMinutes}m ago";
+    if (diff.inHours < 24) return "Last seen ${diff.inHours}h ago";
+    return "Last seen ${DateFormat.yMMMd().format(date)}";
   }
 }

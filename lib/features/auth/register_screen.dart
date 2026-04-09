@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/theme/app_theme.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -10,15 +11,10 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  static const Color habeshaGold = Color(0xFFD4AF35);
-  static const Color backgroundDark = Color(0xFF0A0A0A);
-  static const Color surfaceGrey = Color(0xFF1A1A1A);
-
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController =
-      TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
 
   bool _isLoading = false;
 
@@ -57,7 +53,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (!mounted) return;
       context.go('/complete-profile');
     } on FirebaseAuthException catch (e) {
-      _showSnackBar(e.message ?? 'Registration failed');
+      debugPrint("Registration Error: ${e.code} - ${e.message}");
+      if (e.code == 'email-already-in-use') {
+        _showSnackBar("Email is already in use. Please log in.");
+      } else if (e.code == 'invalid-email') {
+        _showSnackBar("Please enter a valid email address.");
+      } else {
+        _showSnackBar(e.message ?? 'Registration failed');
+      }
+    } catch (e) {
+      debugPrint("Unexpected Registration Exception: $e");
+      _showSnackBar("An unexpected error occurred.");
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -66,22 +72,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   void _showSnackBar(String message) {
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.redAccent),
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppColors.error,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: backgroundDark,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text(
-          'Create Account',
-          style: TextStyle(color: habeshaGold),
-        ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => context.pop(),
@@ -89,107 +96,90 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 20),
-              const Text(
-                'Join Habesha Dates',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Create your account to start matching.',
-                style: TextStyle(color: Colors.white54),
-              ),
-              const SizedBox(height: 30),
-              TextField(
-                controller: _emailController,
-                keyboardType: TextInputType.emailAddress,
-                style: const TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  hintText: 'Email',
-                  hintStyle: const TextStyle(color: Colors.white38),
-                  filled: true,
-                  fillColor: surfaceGrey,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
+              Hero(
+                tag: 'logo_text',
+                child: Text(
+                  'Join Habesha Dates',
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
               ),
               const SizedBox(height: 12),
-              TextField(
-                controller: _passwordController,
-                obscureText: true,
-                style: const TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  hintText: 'Password',
-                  hintStyle: const TextStyle(color: Colors.white38),
-                  filled: true,
-                  fillColor: surfaceGrey,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
+              Text(
+                'Create your premium account to start matching with your soulmate.',
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: Colors.white54,
+                    ),
               ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: _confirmPasswordController,
-                obscureText: true,
-                style: const TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  hintText: 'Confirm password',
-                  hintStyle: const TextStyle(color: Colors.white38),
-                  filled: true,
-                  fillColor: surfaceGrey,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 40),
+              
+              _buildTextField(_emailController, 'Email', Icons.email_outlined, keyboardType: TextInputType.emailAddress),
+              const SizedBox(height: 16),
+              _buildTextField(_passwordController, 'Password', Icons.lock_outline, obscureText: true),
+              const SizedBox(height: 16),
+              _buildTextField(_confirmPasswordController, 'Confirm Password', Icons.lock_reset_outlined, obscureText: true),
+              
+              const SizedBox(height: 40),
               SizedBox(
                 width: double.infinity,
                 height: 55,
                 child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: habeshaGold,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
                   onPressed: _isLoading ? null : _register,
                   child: _isLoading
-                      ? const CircularProgressIndicator(color: Colors.black)
-                      : const Text(
-                          'Create account',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                      ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2))
+                      : const Text('Create Account'),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
               Center(
                 child: TextButton(
                   onPressed: () => context.pop(),
-                  child: const Text(
-                    'Already have an account? Log in',
-                    style: TextStyle(color: habeshaGold),
+                  child: RichText(
+                    text: const TextSpan(
+                      text: "Already have an account? ",
+                      style: TextStyle(color: Colors.white54),
+                      children: [
+                        TextSpan(
+                          text: "Log in",
+                          style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String hint, IconData icon, {bool obscureText = false, TextInputType? keyboardType}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: TextField(
+        controller: controller,
+        obscureText: obscureText,
+        keyboardType: keyboardType,
+        style: const TextStyle(color: Colors.white, fontSize: 16),
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: const TextStyle(color: Colors.white24),
+          prefixIcon: Icon(icon, color: AppColors.gold, size: 20),
+          prefixIconConstraints: const BoxConstraints(minWidth: 40),
+          border: InputBorder.none,
         ),
       ),
     );

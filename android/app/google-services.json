@@ -12,15 +12,33 @@
           "package_name": "com.yafnad.habesha_dates"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "60717378999-24q9pscoeljoh725f70htes624gj27e2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.yafnad.habesha_dates",
+            "certificate_hash": "4848f52a3d78dfcb3e6700363a66ab7dc8b86ae9"
+          }
+        },
+        {
+          "client_id": "60717378999-barcrvvi3495gc1s9fsg46ko2nso1sc7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": ""
+          "current_key": "AIzaSyCPuNj_LvrrF5_LngQs8MosAKW0YTmKJi0"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "60717378999-barcrvvi3495gc1s9fsg46ko2nso1sc7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

@@ -11,8 +11,9 @@ import 'package:habesha_dates/core/theme/app_theme.dart';
 
 void main() {
   test('App theme uses dark mode and brand colors', () {
-    expect(appTheme.brightness, Brightness.dark);
-    expect(appTheme.primaryColor, AppColors.gold);
-    expect(appTheme.scaffoldBackgroundColor, AppColors.darkBg);
+    final theme = AppTheme.darkTheme;
+    expect(theme.brightness, Brightness.dark);
+    expect(theme.primaryColor, AppColors.gold);
+    expect(theme.scaffoldBackgroundColor, AppColors.darkBg);
   });
 }

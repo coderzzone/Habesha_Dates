@@ -1,0 +1,198 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function isAdmin() {
+      return signedIn()
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    function isChatParticipant() {
+      return signedIn() && request.auth.uid in resource.data.users;
+    }
+
+    // Users collection
+    match /users/{userId} {
+      allow read: if signedIn();
+
+      // Create own profile (Complete Profile screen)
+      // Hardened: client cannot set premium/access/verification fields at creation.
+      allow create: if isOwner(userId)
+        && request.resource.data.uid == request.auth.uid
+        && !request.resource.data.keys().hasAny([
+          'swipeCount', 'lastSwipeResetTime', 'access',
+          'isVerified', 'verification'
+        ]);
+
+      // Update own profile + settings + presence + location
+      allow update: if isOwner(userId)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          // Core profile
+          'uid', 'name', 'age', 'gender', 'bio', 'religion', 'heritage', 'intent',
+          'profileImageUrl', 'profileImages', 'phoneNumber', 'email', 'createdAt',
+          'jobTitle', 'education', 'height', 'smoking',
+
+          // Presence & location
+          'isOnline', 'lastSeen', 'latitude', 'longitude', 'lastLocationUpdate',
+
+          // Settings
+          'maxDistance', 'minAge', 'maxAge', 'notificationsEnabled',
+          'fcmTokens',
+
+          // Monetization counters (client-side)
+          'swipeCount', 'lastSwipeResetTime',
+
+          // Non-sensitive audit fields
+          'lastUpdated'
+        ]);
+
+      // Admin-only updates for premium/access/verification
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys()
+            .hasAny([
+              'swipeCount', 'lastSwipeResetTime', 'access',
+              'isVerified', 'verification',
+              'isPremium', 'premiumActivatedAt'
+            ]);
+
+      // User notifications subcollection
+      match /notifications/{notifId} {
+        allow read: if isOwner(userId);
+        allow create: if signedIn()
+          && request.resource.data.to == userId
+          && request.resource.data.from == request.auth.uid;
+        allow update, delete: if isOwner(userId);
+      }
+    }
+
+    // Chats collection
+    match /chats/{chatId} {
+      allow read: if isChatParticipant();
+
+      allow create: if signedIn()
+        && request.auth.uid in request.resource.data.users
+        && request.resource.data.users.size() == 2;
+
+      allow update: if isChatParticipant()
+        && request.resource.data.users == resource.data.users;
+
+      // Messages subcollection
+      match /messages/{messageId} {
+        allow read: if isChatParticipant();
+
+        allow create: if isChatParticipant()
+          && request.resource.data.senderId == request.auth.uid;
+
+        // Not used by the app; keep locked down
+        allow update, delete: if false;
+      }
+    }
+
+    // Likes collection
+    match /likes/{likeId} {
+      allow read: if signedIn() && (
+        request.auth.uid == resource.data.from ||
+        request.auth.uid == resource.data.to ||
+        request.auth.uid == resource.data.userId ||
+        request.auth.uid == resource.data.likedUserId
+      );
+
+      allow create: if signedIn() && (
+        request.resource.data.from == request.auth.uid ||
+        request.resource.data.userId == request.auth.uid
+      );
+
+      allow delete: if signedIn() && (
+        request.auth.uid == resource.data.from ||
+        request.auth.uid == resource.data.to ||
+        request.auth.uid == resource.data.userId ||
+        request.auth.uid == resource.data.likedUserId
+      );
+    }
+
+    // Follows collection
+    match /follows/{followId} {
+      allow read: if signedIn();
+
+      allow create: if signedIn()
+        && request.resource.data.followerId == request.auth.uid;
+
+      allow delete: if signedIn()
+        && resource.data.followerId == request.auth.uid;
+    }
+
+    // Payment request rules
+    match /payment_requests/{reqId} {
+      allow read: if signedIn()
+        && (request.auth.uid == resource.data.userId || isAdmin());
+
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid;
+
+      allow update, delete: if isAdmin();
+    }
+
+    // Payment transactions should be server/admin only
+    match /payment_transactions/{txId} {
+      allow read, write: if isAdmin();
+    }
+
+    // ID signature records (verification) - server/admin only
+    match /id_signatures/{sigId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Admin collections (CMS)
+    match /reports/{reportId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /safety_settings/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /revenue_daily/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /analytics_daily/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /notifications/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /feature_flags/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /admin_roles/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /audit_logs/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /platform_settings/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /subscriptions/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /monetization_events/{docId} {
+      allow read, write: if isAdmin();
+    }
+  }
+}

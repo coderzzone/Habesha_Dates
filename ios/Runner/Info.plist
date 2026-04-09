@@ -43,7 +43,13 @@
 	</array>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Habesha Dates needs your location to find matches near you.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Habesha Dates needs your location to find matches near you.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>GADApplicationIdentifier</key>
+	<string>ca-app-pub-7163477416722901~5456821941</string>
 </dict>
 </plist>

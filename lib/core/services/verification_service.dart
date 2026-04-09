@@ -1,8 +1,6 @@
-import 'dart:convert';
 import 'dart:io';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:crypto/crypto.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
 class VerificationResult {
@@ -18,19 +16,12 @@ class VerificationResult {
 }
 
 class VerificationService {
-  VerificationService({FirebaseFirestore? firestore, FirebaseStorage? storage})
-    : _firestore = firestore ?? FirebaseFirestore.instance,
-      _storage = storage ?? FirebaseStorage.instance;
+  VerificationService({FirebaseStorage? storage, FirebaseFunctions? functions})
+    : _storage = storage ?? FirebaseStorage.instance,
+      _functions = functions ?? FirebaseFunctions.instance;
 
-  final FirebaseFirestore _firestore;
   final FirebaseStorage _storage;
-
-  String buildIdSignature(String rawIdNumber) {
-    final normalized = rawIdNumber
-        .replaceAll(RegExp(r'[^A-Za-z0-9]'), '')
-        .toUpperCase();
-    return sha256.convert(utf8.encode(normalized)).toString();
-  }
+  final FirebaseFunctions _functions;
 
   bool isValidNationalId(String rawIdNumber) {
     final normalized = rawIdNumber.replaceAll(RegExp(r'[^A-Za-z0-9]'), '');
@@ -43,10 +34,6 @@ class VerificationService {
     required File idImageFile,
     required File selfieImageFile,
   }) async {
-    final normalizedId = nationalIdNumber
-        .replaceAll(RegExp(r'[^A-Za-z0-9]'), '')
-        .toUpperCase();
-    final signature = buildIdSignature(normalizedId);
     final ts = DateTime.now().millisecondsSinceEpoch;
 
     final idRef = _storage.ref('verifications/$uid/${ts}_id.jpg');
@@ -58,48 +45,27 @@ class VerificationService {
     final idImageUrl = await idRef.getDownloadURL();
     final selfieImageUrl = await selfieRef.getDownloadURL();
 
-    final signatureRef = _firestore.collection('id_signatures').doc(signature);
-    final userRef = _firestore.collection('users').doc(uid);
-    final now = FieldValue.serverTimestamp();
+    try {
+      final callable = _functions.httpsCallable('submitVerification');
+      final result = await callable.call({
+        'nationalIdNumber': nationalIdNumber,
+        'idImageUrl': idImageUrl,
+        'selfieImageUrl': selfieImageUrl,
+      });
 
-    await _firestore.runTransaction((tx) async {
-      final signatureSnapshot = await tx.get(signatureRef);
-      if (signatureSnapshot.exists) {
-        final ownerUid = signatureSnapshot.data()?['ownerUid'] as String?;
-        if (ownerUid != null && ownerUid != uid) {
-          throw StateError('id_already_registered');
-        }
+      final data = (result.data as Map?) ?? {};
+      final signature = data['signature']?.toString() ?? '';
+
+      return VerificationResult(
+        signature: signature,
+        idImageUrl: idImageUrl,
+        selfieImageUrl: selfieImageUrl,
+      );
+    } on FirebaseFunctionsException catch (e) {
+      if (e.code == 'already-exists') {
+        throw StateError('id_already_registered');
       }
-
-      tx.set(signatureRef, {
-        'ownerUid': uid,
-        'nationalIdLast4': normalizedId.length >= 4
-            ? normalizedId.substring(normalizedId.length - 4)
-            : normalizedId,
-        'updatedAt': now,
-      }, SetOptions(merge: true));
-
-      tx.set(userRef, {
-        'isVerified': true,
-        'verification': {
-          'status': 'verified',
-          'provider': 'fayda',
-          'idSignature': signature,
-          'nationalIdLast4': normalizedId.length >= 4
-              ? normalizedId.substring(normalizedId.length - 4)
-              : normalizedId,
-          'idImageUrl': idImageUrl,
-          'selfieImageUrl': selfieImageUrl,
-          'verifiedAt': now,
-        },
-        'lastUpdated': now,
-      }, SetOptions(merge: true));
-    });
-
-    return VerificationResult(
-      signature: signature,
-      idImageUrl: idImageUrl,
-      selfieImageUrl: selfieImageUrl,
-    );
+      rethrow;
+    }
   }
 }

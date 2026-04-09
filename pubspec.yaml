@@ -41,19 +41,28 @@ dependencies:
   # UI Gems
   flutter_card_swiper: ^7.0.0 # For that Tinder-style swipe effect
   cached_network_image: ^3.4.1 # To load user photos fast without lag
+  google_fonts: ^6.2.1
+  flutter_blurhash: ^0.8.2
   image_picker: ^1.2.1
   firebase_storage: ^13.0.6
   firebase_auth: ^6.1.4
   cloud_firestore: ^6.1.2
+  cloud_functions: ^6.1.0
   camera: ^0.11.0
   dio: ^5.4.1
   intl: ^0.20.2
   material: ^1.0.1
   firebase_core: ^4.4.0
+  firebase_messaging: ^16.0.0
   google_sign_in: ^6.2.1
   http: ^1.2.0
   crypto: ^3.0.3
   url_launcher: ^6.3.1
+  firebase_app_check: ^0.4.2
+  geolocator: ^13.0.1
+  shared_preferences: ^2.5.1
+  google_mobile_ads: ^5.1.0 # For AdMob integration
+  uuid: ^4.5.1
 
 dev_dependencies:
   flutter_test:
@@ -110,6 +119,8 @@ flutter:
 # see https://flutter.dev/to/font-from-package
 
 flutter_launcher_icons:
-  android: true
+  android: "launcher_icon"
   ios: true
-  image_path: "Updated Logo.png"
+  image_path: "AppIcons/playstore.png"
+  min_sdk_android: 21
+  remove_alpha_ios: true

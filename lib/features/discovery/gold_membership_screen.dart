@@ -357,10 +357,10 @@ class _GoldMembershipScreenState extends State<GoldMembershipScreen> {
                 elevation: 5,
               ),
               onPressed: () {
-                // Future Integration: Chapa / Telebirr Payment
+                // Telebirr only (manual verification)
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text("Processing Payment via Chapa..."),
+                    content: Text("Proceed to Telebirr payment and send screenshot to @yafnad."),
                     backgroundColor: habeshaEmerald,
                   ),
                 );

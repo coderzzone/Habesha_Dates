@@ -43,6 +43,74 @@ app.get('/health', (req, res) => {
   res.json({ ok: true });
 });
 
+/**
+ * Haversine formula to calculate distance between two lat/lng points in km.
+ */
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371; // Earth's radius in km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+// --- DISCOVERY & MATCHING ---
+
+app.post('/api/discovery/nearby', async (req, res) => {
+  try {
+    const { uid, lat, lng, radius = 50 } = req.body;
+    if (!uid || lat === undefined || lng === undefined) {
+      return res.status(400).json({ message: 'uid, lat, and lng are required.' });
+    }
+
+    // Get requester's gender to filter
+    const userDoc = await db.collection('users').doc(uid).get();
+    if (!userDoc.exists) return res.status(404).json({ message: 'User not found' });
+    
+    const userData = userDoc.data();
+    const myGender = (userData.gender || 'male').toLowerCase();
+    const targetGender = myGender === 'male' ? 'female' : 'male';
+
+    // Fetch potential matches
+    const usersSnap = await db.collection('users')
+      .where('gender', '==', targetGender)
+      .limit(100)
+      .get();
+
+    const nearbyUsers = [];
+    usersSnap.forEach(doc => {
+      if (doc.id === uid) return;
+      const data = doc.data();
+      if (data.latitude && data.longitude) {
+        const dist = calculateDistance(lat, lng, data.latitude, data.longitude);
+        if (dist <= radius) {
+          nearbyUsers.push({
+            id: doc.id,
+            name: data.name,
+            age: data.age,
+            profileImageUrl: data.profileImageUrl,
+            gender: data.gender,
+            heritage: data.heritage,
+            religion: data.religion,
+            distance: parseFloat(dist.toFixed(2))
+          });
+        }
+      }
+    });
+
+    // Sort by distance
+    nearbyUsers.sort((a, b) => a.distance - b.distance);
+    
+    return res.json(nearbyUsers.slice(0, 20));
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+});
+
 app.get('/payment-return', (req, res) => {
   res.status(200).send('Payment completed. You can return to the app.');
 });

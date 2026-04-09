@@ -16,19 +16,19 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: '',
-    appId: '',
-    messagingSenderId: 'YOUR_SENDER_ID',
+    apiKey: 'AIzaSyCPuNj_LvrrF5_LngQs8MosAKW0YTmKJi0',
+    appId: '1:60717378999:android:7847778554bb7994bf0c32',
+    messagingSenderId: '60717378999',
     projectId: 'habesha-dates',
-    storageBucket: 'habesha-dates.appspot.com',
+    storageBucket: 'habesha-dates.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'YOUR_IOS_API_KEY',
     appId: 'YOUR_IOS_APP_ID',
-    messagingSenderId: 'YOUR_SENDER_ID',
+    messagingSenderId: '60717378999',
     projectId: 'habesha-dates',
-    storageBucket: 'habesha-dates.appspot.com',
+    storageBucket: 'habesha-dates.firebasestorage.app',
     iosBundleId: 'com.yafnad.habeshaDates',
   );
 }
